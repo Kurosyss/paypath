@@ -2,8 +2,6 @@
 
 ![PayPath Banner](public/brand/paypath-social-preview.png)
 
-A developer testing harness and diagnostic workbench for PayPal checkout integrations. PayPath reproduces edge-case payment failures, injects chaos conditions, verifies transactions against 10 deterministic safety invariants, and generates resilient code fixes.
-
 [![Next.js 16](https://img.shields.io/badge/Next.js-16-000000?style=flat-square&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
 [![React 19](https://img.shields.io/badge/React-19-000000?style=flat-square&logo=react&logoColor=white)](https://react.dev/)
 [![TypeScript 5](https://img.shields.io/badge/TypeScript-5-000000?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
@@ -12,12 +10,23 @@ A developer testing harness and diagnostic workbench for PayPal checkout integra
 [![Vitest 5](https://img.shields.io/badge/Vitest-5-000000?style=flat-square&logo=vitest&logoColor=white)](https://vitest.dev/)
 [![MIT License](https://img.shields.io/badge/License-MIT-000000?style=flat-square)](LICENSE)
 
+A developer testing harness and diagnostic workbench for PayPal checkout integrations.
+
+---
+
+## Product Demo
+
+A 23-second product launch video provides an overview of the PayPath testing workflow, including fault injection, invariant violation detection, and safe state reconciliation.
+
+[![Watch PayPath Product Demo](media/paypath-product-launch.jpg)](https://youtu.be/--0wDgUDvRo)
+
+[Watch the 23-second product demo on YouTube](https://youtu.be/--0wDgUDvRo)
 
 ---
 
 ## Table of Contents
 
-- [Product Walkthrough](#product-walkthrough)
+- [Product Demo](#product-demo)
 - [Product Screenshots](#product-screenshots)
 - [Problem and Solution](#problem-and-solution)
 - [Key Features](#key-features)
@@ -28,15 +37,6 @@ A developer testing harness and diagnostic workbench for PayPal checkout integra
 - [Security and Limitations](#security-and-limitations)
 - [License and Contribution](#license-and-contribution)
 
----
-
-## Product Walkthrough
-
-A 23-second product launch video provides an overview of the PayPath testing workflow, including fault injection, invariant violation detection, and safe state reconciliation.
-
-[![PayPath Launch Video Teaser](media/paypath-product-launch.jpg)](media/paypath-product-launch.mp4)
-
-*Note: GitHub does not support inline playback of local video files. Click the preview above to view or download the high-resolution 23-second launch video (`media/paypath-product-launch.mp4`). This video is a product teaser and does not replace the full technical demonstration.*
 
 ---
 
