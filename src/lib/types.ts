@@ -140,3 +140,16 @@ export interface AIConfigStatus {
   model: string;
   available: boolean;
 }
+
+export interface PaymentConfirmationRecord {
+  orderId: string;
+  captureId?: string;
+  amount: string;
+  currency: string;
+  status: OrderState;
+  confirmedAt: string;
+  updatedAt: string;
+  captureAttempts: number;
+  source: 'CHECKOUT_RETURN' | 'SCENARIO_RUN' | 'WEBHOOK' | 'RECONCILIATION';
+}
+

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { ThemeProvider } from "@/components/ThemeProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,19 +14,54 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PayPath — PayPal Payment Reliability Lab & AI Diagnostic Engine",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
+  title: "PayPath — Payment Reliability Lab",
   description:
-    "Test real PayPal payment flows, expose failure-handling weaknesses, and use AI to diagnose payment integration errors and verify proposed fixes.",
+    "Test PayPal payment flows, uncover reliability failures, and use AI to diagnose and verify fixes.",
   keywords: [
     "PayPal",
-    "AI",
     "Payment Reliability",
+    "AI Diagnostics",
     "Chaos Engineering",
     "Checkout Testing",
     "Webhooks",
     "Idempotency",
     "State Reconciliation",
+    "Developer Diagnostics",
   ],
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/icon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/icon-16.png", sizes: "16x16", type: "image/png" },
+      { url: "/icon.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
+  openGraph: {
+    title: "PayPath — Payment Reliability Lab",
+    description:
+      "Test PayPal payment flows, uncover reliability failures, and use AI to diagnose and verify fixes.",
+    type: "website",
+    images: [
+      {
+        url: "/brand/paypath-social-preview.png",
+        width: 1200,
+        height: 630,
+        alt: "PayPath — Payment Reliability Lab",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "PayPath — Payment Reliability Lab",
+    description:
+      "Test PayPal payment flows, uncover reliability failures, and use AI to diagnose and verify fixes.",
+    images: ["/brand/paypath-social-preview.png"],
+  },
 };
 
 export default function RootLayout({
@@ -36,9 +72,14 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} dark antialiased`}
+      suppressHydrationWarning
+      className={`${geistSans.variable} ${geistMono.variable} antialiased dark`}
     >
-      <body className="min-h-screen bg-[#070A0F] text-slate-100">{children}</body>
+      <body className="min-h-screen bg-[var(--bg-canvas)] text-[var(--text-ink)] antialiased selection:bg-[var(--text-ink)] selection:text-[var(--bg-canvas)] transition-colors duration-150">
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
+      </body>
     </html>
   );
 }

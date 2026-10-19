@@ -43,3 +43,28 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local tool clones and video rendering pipelines
+brag-repo/
+brag-output/
+.agents/
+
+# video composition build artifacts & unverified third-party audio assets
+.hyperframes/
+**/.hyperframes/
+media/qa-frames/
+media/*-candidate.mp4
+media/paypath-video-source/assets/music/
+media/paypath-video-source/assets/sfx/
+
+# local development, testing & capture helpers
+scripts/audit_src_secrets.cjs
+scripts/security_audit_scanner.cjs
+scripts/capture_*.cjs
+scripts/capture_*.mjs
+scripts/extract_qa_frames.cjs
+scripts/generate_symbol_concepts.py
+scripts/inspect_concept2_scale.py
+scripts/test_lifecycle_artwork.py
+scripts/test_svg_mark.py
+

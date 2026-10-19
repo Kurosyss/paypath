@@ -1,21 +1,137 @@
 @import "tailwindcss";
 
 :root {
-  --background: #070a0f;
-  --foreground: #f1f5f9;
+  --bg-canvas: #fafafa;
+  --bg-elevated: #ffffff;
+  --text-ink: #171717;
+  --text-body: #4d4d4d;
+  --text-mute: #8f8f8f;
+  --text-faint: #a1a1a1;
+  --border-hairline: #ebebeb;
+  --border-hairline-soft: #f2f2f2;
+  --accent-color: #171717;
+  --accent-hover: #000000;
+  --accent-soft: rgba(0, 0, 0, 0.05);
+  --color-error: #171717;
+  --color-error-deep: #000000;
+  --color-warning: #4d4d4d;
+  --color-warning-soft: rgba(0, 0, 0, 0.04);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+.dark {
+  --bg-canvas: #000000;
+  --bg-elevated: #111111;
+  --text-ink: #ededed;
+  --text-body: #888888;
+  --text-mute: #666666;
+  --text-faint: #444444;
+  --border-hairline: #333333;
+  --border-hairline-soft: #1f1f1f;
+  --accent-color: #ededed;
+  --accent-hover: #ffffff;
+  --accent-soft: rgba(255, 255, 255, 0.08);
+  --color-error: #ededed;
+  --color-error-deep: #ffffff;
+  --color-warning: #888888;
+  --color-warning-soft: rgba(255, 255, 255, 0.06);
+}
+
+@theme {
+  --font-sans: var(--font-geist-sans), "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: var(--font-geist-mono), "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  --color-canvas: var(--bg-canvas);
+  --color-canvas-elevated: var(--bg-elevated);
+  --color-ink: var(--text-ink);
+  --color-body: var(--text-body);
+  --color-mute: var(--text-mute);
+  --color-faint: var(--text-faint);
+  --color-hairline: var(--border-hairline);
+  --color-hairline-soft: var(--border-hairline-soft);
+  --color-accent: var(--accent-color);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-soft: var(--accent-soft);
+
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-pill-category: 64px;
+  --radius-pill: 100px;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background-color: var(--bg-canvas);
+  color: var(--text-body);
+  font-family: var(--font-sans);
   font-feature-settings: "rlig" 1, "calt" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Vercel Typography Classes from DESIGN.md */
+.font-display-xl {
+  font-size: 48px;
+  line-height: 48px;
+  font-weight: 600;
+  letter-spacing: -2.4px;
+}
+
+.font-heading-lg {
+  font-size: 32px;
+  line-height: 40px;
+  font-weight: 600;
+  letter-spacing: -1.28px;
+}
+
+.font-heading-md {
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 600;
+  letter-spacing: -0.4px;
+}
+
+.font-label-sm {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  letter-spacing: -0.28px;
+}
+
+.font-mono-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+/* Subtle Monochrome Hero Highlight (zero chromatic color) */
+.hero-mesh {
+  background-image: 
+    radial-gradient(at 50% 0%, rgba(0, 0, 0, 0.02) 0px, transparent 60%);
+}
+
+.dark .hero-mesh {
+  background-image: 
+    radial-gradient(at 50% 0%, rgba(255, 255, 255, 0.04) 0px, transparent 60%);
+}
+
+/* Elevation Levels from DESIGN.md */
+.shadow-whisper {
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.dark .shadow-whisper {
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+}
+
+.shadow-floating {
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.04), 0 8px 16px -4px rgba(0, 0, 0, 0.08);
+}
+
+.dark .shadow-floating {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4), 0 12px 24px -4px rgba(0, 0, 0, 0.6);
 }
 
 /* Custom Sleek Scrollbar */
@@ -25,15 +141,15 @@ body {
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.6);
+  background: var(--bg-canvas);
   border-radius: 4px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(100, 116, 139, 0.4);
+  background: var(--border-hairline);
   border-radius: 4px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(6, 182, 212, 0.6);
+  background: var(--text-mute);
 }

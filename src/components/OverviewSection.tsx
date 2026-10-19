@@ -1,15 +1,6 @@
 'use client';
 
 import React from 'react';
-import {
-  ShieldAlert,
-  CheckCircle2,
-  AlertTriangle,
-  Zap,
-  Lock,
-  Server,
-  Layers,
-} from 'lucide-react';
 import { INVARIANT_DEFINITIONS } from '@/lib/invariants';
 import { TestRunRecord, PayPalConfigStatus } from '@/lib/types';
 
@@ -47,113 +38,91 @@ export function OverviewSection({ runs, paypalConfig }: OverviewSectionProps) {
 
   return (
     <div className="space-y-6">
-      {/* Top Metrics Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {/* Total Runs */}
-        <div className="rounded-xl border border-white/10 bg-slate-900/60 p-4 backdrop-blur-sm">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium uppercase tracking-wider text-slate-400">
+      {/* Top Metrics Row: Unified Surface with Hairline Dividers (No nested boxes) */}
+      <div className="rounded-[12px] border border-[var(--border-hairline)] bg-[var(--bg-elevated)] p-6 shadow-whisper transition-colors">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-[var(--border-hairline)]">
+          {/* Total Runs */}
+          <div className="py-2 sm:py-0 sm:px-4 first:sm:pl-0">
+            <span className="font-mono text-[10px] uppercase tracking-wider text-[var(--text-mute)] font-medium block">
               Total Test Runs
             </span>
-            <div className="rounded-lg bg-cyan-950 p-2 text-cyan-400 ring-1 ring-cyan-800/50">
-              <Layers className="h-4 w-4" />
+            <div className="mt-2 flex items-baseline gap-2">
+              <span className="text-3xl font-semibold tracking-[-1.28px] text-[var(--text-ink)]">
+                {totalRuns}
+              </span>
+              <span className="text-xs text-[var(--text-mute)]">executed</span>
             </div>
+            <p className="mt-1 text-xs text-[var(--text-body)]">
+              {passedRuns} passed &middot; {failedRuns} failed
+            </p>
           </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-3xl font-extrabold tracking-tight text-white">{totalRuns}</span>
-            <span className="text-xs text-slate-400">recorded</span>
-          </div>
-          <div className="mt-2 text-xs text-slate-400">
-            {passedRuns} passed · {failedRuns} failed
-          </div>
-        </div>
 
-        {/* Invariant Compliance */}
-        <div className="rounded-xl border border-white/10 bg-slate-900/60 p-4 backdrop-blur-sm">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium uppercase tracking-wider text-slate-400">
-              Invariant Compliance
+          {/* Invariant Compliance */}
+          <div className="py-2 sm:py-0 sm:px-4">
+            <span className="font-mono text-[10px] uppercase tracking-wider text-[var(--text-mute)] font-medium block">
+              Invariant Pass Rate
             </span>
-            <div className="rounded-lg bg-emerald-950 p-2 text-emerald-400 ring-1 ring-emerald-800/50">
-              <CheckCircle2 className="h-4 w-4" />
+            <div className="mt-2 flex items-baseline gap-2">
+              <span className="text-3xl font-semibold tracking-[-1.28px] text-[var(--text-ink)]">
+                {passRate}%
+              </span>
+              <span className="text-xs text-[var(--text-mute)]">compliance</span>
             </div>
+            <p className="mt-1 text-xs text-[var(--text-body)]">
+              10 core payment safety rules
+            </p>
           </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span
-              className={`text-3xl font-extrabold tracking-tight ${
-                passRate >= 90
-                  ? 'text-emerald-400'
-                  : passRate >= 70
-                  ? 'text-amber-400'
-                  : 'text-rose-400'
-              }`}
-            >
-              {passRate}%
-            </span>
-            <span className="text-xs text-slate-400">pass rate</span>
-          </div>
-          <div className="mt-2 text-xs text-slate-400">10 core payment safety invariants</div>
-        </div>
 
-        {/* Flaws Caught */}
-        <div className="rounded-xl border border-white/10 bg-slate-900/60 p-4 backdrop-blur-sm">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium uppercase tracking-wider text-slate-400">
-              Flaws Prevented
+          {/* Flaws Caught */}
+          <div className="py-2 sm:py-0 sm:px-4">
+            <span className="font-mono text-[10px] uppercase tracking-wider text-[var(--text-mute)] font-medium block">
+              Vulnerabilities Isolated
             </span>
-            <div className="rounded-lg bg-rose-950 p-2 text-rose-400 ring-1 ring-rose-800/50">
-              <ShieldAlert className="h-4 w-4" />
+            <div className="mt-2 flex items-baseline gap-2">
+              <span className="text-3xl font-semibold tracking-[-1.28px] text-[var(--text-ink)]">
+                {bugsCaught}
+              </span>
+              <span className="text-xs text-[var(--text-mute)]">flaws caught</span>
             </div>
+            <p className="mt-1 text-xs text-[var(--text-body)]">
+              Decline swallowing, duplicate capture
+            </p>
           </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-3xl font-extrabold tracking-tight text-white">{bugsCaught}</span>
-            <span className="text-xs text-rose-400">critical bugs caught</span>
-          </div>
-          <div className="mt-2 text-xs text-slate-400">
-            Decline swallowing, blind retries, duplicates
-          </div>
-        </div>
 
-        {/* Sandbox Health */}
-        <div className="rounded-xl border border-white/10 bg-slate-900/60 p-4 backdrop-blur-sm">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium uppercase tracking-wider text-slate-400">
-              PayPal Gateway
+          {/* Gateway Target */}
+          <div className="py-2 sm:py-0 sm:px-4 last:sm:pr-0">
+            <span className="font-mono text-[10px] uppercase tracking-wider text-[var(--text-mute)] font-medium block">
+              Gateway Target
             </span>
-            <div className="rounded-lg bg-blue-950 p-2 text-blue-400 ring-1 ring-blue-800/50">
-              <Server className="h-4 w-4" />
+            <div className="mt-2 flex items-baseline gap-2">
+              <span className="text-xl font-semibold tracking-[-0.4px] text-[var(--text-ink)] font-mono">
+                {paypalConfig?.connected ? 'api-m.sandbox' : 'Deterministic Mock'}
+              </span>
             </div>
-          </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-xl font-bold tracking-tight text-white">
-              {paypalConfig?.connected ? 'api-m.sandbox' : 'Local Mock'}
-            </span>
-          </div>
-          <div className="mt-2 flex items-center gap-1.5 text-xs text-slate-400">
-            <Zap className="h-3 w-3 text-cyan-400" />
-            <span>Orders v2 · Webhooks REST</span>
+            <p className="mt-1 text-xs text-[var(--text-body)]">
+              Orders v2 &middot; Authoritative State
+            </p>
           </div>
         </div>
       </div>
 
-      {/* Invariant Health Matrix */}
-      <div className="rounded-xl border border-white/10 bg-slate-900/40 p-5 backdrop-blur-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-4">
+      {/* Invariant Health Matrix: Clean Divided Row List (Zero Nested Boxes) */}
+      <div className="rounded-[12px] border border-[var(--border-hairline)] bg-[var(--bg-elevated)] shadow-whisper transition-colors">
+        <div className="p-6 border-b border-[var(--border-hairline)] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h3 className="text-base font-semibold text-white flex items-center gap-2">
-              <Lock className="h-4 w-4 text-cyan-400" />
+            <h3 className="text-base font-semibold text-[var(--text-ink)] tracking-[-0.4px]">
               Deterministic Invariant Matrix (10 Core Payment Rules)
             </h3>
-            <p className="text-xs text-slate-400">
-              Formal verification checks that govern state progression, idempotency, and security.
+            <p className="text-xs text-[var(--text-body)] mt-0.5">
+              Formal safety rules enforced across state progression, idempotency keys, and trace sanitization.
             </p>
           </div>
-          <span className="text-xs font-mono text-cyan-400 bg-cyan-950/60 px-2.5 py-1 rounded-md border border-cyan-800/60 w-fit">
-            Deterministic Decision Engine
+          <span className="font-mono text-[11px] uppercase tracking-wider text-[var(--text-ink)] bg-[var(--bg-canvas)] px-2.5 py-1 rounded-[6px] border border-[var(--border-hairline)] w-fit font-medium">
+            Formally Verified
           </span>
         </div>
 
-        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="divide-y divide-[var(--border-hairline)]">
           {INVARIANT_DEFINITIONS.map((inv) => {
             const stats = invariantCheckMap[inv.id] || { passed: 0, failed: 0 };
             const hasTested = stats.passed + stats.failed > 0;
@@ -162,37 +131,37 @@ export function OverviewSection({ runs, paypalConfig }: OverviewSectionProps) {
             return (
               <div
                 key={inv.id}
-                className="flex items-start justify-between rounded-lg border border-white/5 bg-slate-950/40 p-3 transition hover:border-white/10"
+                className="p-4 sm:px-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-[var(--bg-canvas)]/60 transition-colors"
               >
-                <div className="space-y-1 pr-2">
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs font-bold text-cyan-300">{inv.id}</span>
-                    <span className="text-xs font-medium text-slate-200">{inv.name}</span>
-                    <span
-                      className={`text-[9px] px-1.5 py-0.2 rounded font-semibold ${
-                        inv.severity === 'CRITICAL'
-                          ? 'bg-rose-950 text-rose-300 border border-rose-800/40'
-                          : 'bg-amber-950 text-amber-300 border border-amber-800/40'
-                      }`}
-                    >
+                <div className="space-y-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-mono text-xs font-semibold text-[var(--text-ink)]">
+                      {inv.id}
+                    </span>
+                    <span className="text-xs font-semibold text-[var(--text-ink)] tracking-[-0.2px]">
+                      {inv.name}
+                    </span>
+                    <span className="text-[10px] px-1.5 py-0.2 rounded-[4px] font-mono font-medium border border-[var(--border-hairline)] bg-[var(--bg-canvas)] text-[var(--text-mute)]">
                       {inv.severity}
                     </span>
                   </div>
-                  <p className="text-[11px] text-slate-400 leading-relaxed">{inv.description}</p>
+                  <p className="text-xs text-[var(--text-body)] leading-relaxed max-w-3xl">
+                    {inv.description}
+                  </p>
                 </div>
 
                 <div className="shrink-0 flex items-center">
                   {!hasTested ? (
-                    <span className="rounded bg-slate-800/80 px-2 py-0.5 text-[10px] font-mono text-slate-400">
+                    <span className="rounded-[4px] bg-[var(--bg-canvas)] px-2 py-0.5 text-[10px] font-mono text-[var(--text-mute)] border border-[var(--border-hairline)]">
                       UNTESTED
                     </span>
                   ) : hasFailure ? (
-                    <span className="flex items-center gap-1 rounded bg-rose-950/80 px-2 py-0.5 text-[10px] font-mono font-medium text-rose-300 border border-rose-800/60">
-                      <AlertTriangle className="h-2.5 w-2.5" /> {stats.failed} VIO
+                    <span className="rounded-[4px] bg-[var(--bg-canvas)] px-2 py-0.5 text-[10px] font-mono font-medium text-[var(--text-ink)] border border-[var(--border-hairline)]">
+                      {stats.failed} VIOLATION{stats.failed > 1 ? 'S' : ''}
                     </span>
                   ) : (
-                    <span className="flex items-center gap-1 rounded bg-emerald-950/80 px-2 py-0.5 text-[10px] font-mono font-medium text-emerald-300 border border-emerald-800/60">
-                      <CheckCircle2 className="h-2.5 w-2.5" /> OK ({stats.passed})
+                    <span className="rounded-[4px] bg-[var(--bg-canvas)] px-2 py-0.5 text-[10px] font-mono font-medium text-[var(--text-ink)] border border-[var(--border-hairline)]">
+                      OK ({stats.passed})
                     </span>
                   )}
                 </div>

@@ -6,10 +6,11 @@
 
 import fs from 'fs';
 import path from 'path';
-import { TestRunRecord, OrderState } from './types';
+import { TestRunRecord, OrderState, PaymentConfirmationRecord } from './types';
 
 const DATA_DIR = path.join(process.cwd(), '.paypath-data');
 const RUNS_FILE = path.join(DATA_DIR, 'runs.json');
+const PAYMENTS_FILE = path.join(DATA_DIR, 'payments.json');
 const DEDUPLICATION_FILE = path.join(DATA_DIR, 'webhook-dedup.json');
 
 // Ensure directory exists
@@ -22,6 +23,62 @@ function ensureStorage() {
 // In-memory cache for fast lookups
 let cachedRuns: TestRunRecord[] = [];
 let isLoaded = false;
+
+let cachedPayments: PaymentConfirmationRecord[] = [];
+let isPaymentsLoaded = false;
+
+function loadPayments(): PaymentConfirmationRecord[] {
+  if (isPaymentsLoaded) return cachedPayments;
+  ensureStorage();
+  if (fs.existsSync(PAYMENTS_FILE)) {
+    try {
+      const data = fs.readFileSync(PAYMENTS_FILE, 'utf-8');
+      cachedPayments = JSON.parse(data);
+    } catch {
+      cachedPayments = [];
+    }
+  } else {
+    cachedPayments = [];
+  }
+  isPaymentsLoaded = true;
+  return cachedPayments;
+}
+
+function savePayments(payments: PaymentConfirmationRecord[]): void {
+  ensureStorage();
+  cachedPayments = payments;
+  fs.writeFileSync(PAYMENTS_FILE, JSON.stringify(payments, null, 2), 'utf-8');
+}
+
+export function getPaymentRecord(orderId: string): PaymentConfirmationRecord | undefined {
+  return loadPayments().find((p) => p.orderId === orderId);
+}
+
+export function getAllPaymentRecords(): PaymentConfirmationRecord[] {
+  return loadPayments().sort(
+    (a, b) => new Date(b.confirmedAt).getTime() - new Date(a.confirmedAt).getTime()
+  );
+}
+
+export function savePaymentRecord(record: PaymentConfirmationRecord): PaymentConfirmationRecord {
+  const payments = loadPayments();
+  const existingIdx = payments.findIndex((p) => p.orderId === record.orderId);
+  if (existingIdx >= 0) {
+    const existing = payments[existingIdx];
+    payments[existingIdx] = {
+      ...existing,
+      ...record,
+      captureAttempts: existing.status === 'COMPLETED' ? existing.captureAttempts : existing.captureAttempts + (record.captureAttempts || 1),
+      updatedAt: new Date().toISOString(),
+    };
+    savePayments(payments);
+    return payments[existingIdx];
+  } else {
+    payments.unshift(record);
+    savePayments(payments);
+    return record;
+  }
+}
 
 function loadRuns(): TestRunRecord[] {
   if (isLoaded) return cachedRuns;

@@ -1,8 +1,10 @@
 'use client';
 
 import React from 'react';
-import { ShieldCheck, Cpu, Sliders, Play, RotateCcw, Activity } from 'lucide-react';
+import { Play, RotateCcw, Sliders, Radio, Activity, Sparkles } from 'lucide-react';
 import { PayPalConfigStatus, AIConfigStatus } from '@/lib/types';
+import { ThemeToggle } from './ThemeToggle';
+import { BrandMark } from './BrandMark';
 
 interface NavbarProps {
   paypalConfig: PayPalConfigStatus | null;
@@ -28,119 +30,98 @@ export function Navbar({
   isRunningSuite,
 }: NavbarProps) {
   const passRate = totalRuns > 0 ? Math.round((passCount / totalRuns) * 100) : 100;
-  const isSandboxLive = paypalConfig?.connected;
+  const isSandboxLive = Boolean(paypalConfig?.connected);
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-white/10 bg-[#0B0F17]/90 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-40 w-full border-b border-[var(--border-hairline)] bg-[var(--bg-canvas)]/95 backdrop-blur-md transition-colors">
+      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Brand */}
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 shadow-lg shadow-cyan-500/20 ring-1 ring-white/20">
-            <ShieldCheck className="h-6 w-6 text-white" />
+          <div className="flex h-7 w-7 items-center justify-center rounded-[6px] bg-[var(--bg-elevated)] border border-[var(--border-hairline)] text-[var(--text-ink)] shadow-whisper">
+            <BrandMark size={16} className="h-4 w-4" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xl font-bold tracking-tight text-white">
-                Pay<span className="text-cyan-400">Path</span>
-              </span>
-              <span className="rounded-full bg-cyan-950/80 px-2.5 py-0.5 text-[10px] font-semibold tracking-wide text-cyan-300 ring-1 ring-cyan-800/60">
-                PAYPAL RELIABILITY LAB
-              </span>
-            </div>
-            <p className="text-xs text-slate-400 hidden sm:block">
-              Chaos Testing, Invariant Verification & AI Diagnostics
-            </p>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-semibold tracking-[-0.4px] text-[var(--text-ink)]">
+              PayPath
+            </span>
+            <span className="font-mono text-[10px] uppercase tracking-wider text-[var(--text-mute)] bg-[var(--border-hairline-soft)] px-1.5 py-0.5 rounded-[4px] font-medium border border-[var(--border-hairline)]">
+              Reliability Lab
+            </span>
           </div>
         </div>
 
-        {/* Live Badges */}
-        <div className="hidden lg:flex items-center gap-3 text-xs">
+        {/* Live Status Indicators (Geist Mono technical spec, strict monochrome) */}
+        <div className="hidden lg:flex items-center gap-2 text-xs font-mono">
           {/* Sandbox Status */}
-          <div
-            className={`flex items-center gap-2 rounded-lg px-3 py-1.5 ring-1 ${
-              isSandboxLive
-                ? 'bg-emerald-950/40 text-emerald-300 ring-emerald-800/60'
-                : 'bg-amber-950/40 text-amber-300 ring-amber-800/60'
-            }`}
-          >
-            <span
-              className={`h-2 w-2 rounded-full ${
-                isSandboxLive ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'
-              }`}
-            />
-            <span className="font-medium">
-              {isSandboxLive ? 'PayPal Sandbox Live' : 'Fault-Injection Mode'}
+          <div className="flex items-center gap-2 rounded-[6px] px-2.5 py-1 border border-[var(--border-hairline)] bg-[var(--bg-elevated)] text-[var(--text-body)]">
+            <span className={`h-1.5 w-1.5 rounded-full ${isSandboxLive ? 'bg-[var(--text-ink)]' : 'border border-[var(--text-mute)]'}`} />
+            <span className="text-[11px]">
+              {isSandboxLive ? 'SANDBOX CONNECTED' : 'FAULT INJECTION'}
             </span>
           </div>
 
           {/* AI Engine Status */}
-          <div
-            className={`flex items-center gap-2 rounded-lg px-3 py-1.5 ring-1 ${
-              aiConfig?.available
-                ? 'bg-purple-950/40 text-purple-300 ring-purple-800/60'
-                : 'bg-slate-900 text-slate-300 ring-slate-800'
-            }`}
-          >
-            <Cpu className="h-3.5 w-3.5 text-purple-400" />
-            <span className="font-mono text-[11px]">
-              {aiConfig?.available ? 'Gemini 2.5 Flash' : 'Expert System Rule Engine'}
+          <div className="flex items-center gap-1.5 rounded-[6px] px-2.5 py-1 border border-[var(--border-hairline)] bg-[var(--bg-elevated)] text-[var(--text-body)]">
+            <Sparkles className="h-3 w-3 text-[var(--text-mute)]" />
+            <span className="text-[11px]">
+              {aiConfig?.available ? 'GEMINI 2.5 FLASH' : 'DETERMINISTIC ENGINE'}
             </span>
           </div>
 
           {/* Health Score */}
-          <div className="flex items-center gap-2 rounded-lg bg-slate-900 px-3 py-1.5 text-slate-300 ring-1 ring-slate-800">
-            <Activity className="h-3.5 w-3.5 text-cyan-400" />
-            <span>Health:</span>
-            <span
-              className={`font-bold ${
-                passRate >= 90
-                  ? 'text-emerald-400'
-                  : passRate >= 70
-                  ? 'text-amber-400'
-                  : 'text-rose-400'
-              }`}
-            >
+          <div className="flex items-center gap-1.5 rounded-[6px] px-2.5 py-1 border border-[var(--border-hairline)] bg-[var(--bg-elevated)] text-[var(--text-body)]">
+            <Activity className="h-3 w-3 text-[var(--text-mute)]" />
+            <span className="text-[11px]">SUITE:</span>
+            <span className="font-semibold text-[11px] text-[var(--text-ink)]">
               {passRate}%
             </span>
           </div>
         </div>
 
-        {/* Actions */}
+        {/* Actions (Vercel 6px square buttons for app chrome) */}
         <div className="flex items-center gap-2">
+          {/* Run Suite CTA */}
           <button
             onClick={onRunAllScenarios}
             disabled={isRunningSuite}
-            className="flex items-center gap-1.5 rounded-lg bg-cyan-500 px-3.5 py-1.5 text-xs font-semibold text-slate-950 shadow-md shadow-cyan-500/20 transition hover:bg-cyan-400 disabled:opacity-50"
+            className="flex items-center gap-1.5 rounded-[6px] bg-[var(--text-ink)] text-[var(--bg-canvas)] px-3 py-1.5 text-xs font-medium hover:opacity-90 transition-opacity disabled:opacity-50 cursor-pointer shadow-whisper"
           >
-            <Play className={`h-3.5 w-3.5 ${isRunningSuite ? 'animate-spin' : ''}`} />
+            <Play className={`h-3 w-3 ${isRunningSuite ? 'animate-spin' : ''}`} />
             <span className="hidden sm:inline">
-              {isRunningSuite ? 'Testing Suite...' : 'Run Full Suite'}
+              {isRunningSuite ? 'Running Suite...' : 'Run Full Suite'}
             </span>
             <span className="sm:hidden">Run All</span>
           </button>
 
+          {/* Webhook Simulator Modal Trigger */}
           <button
             onClick={onOpenWebhookModal}
-            className="flex items-center gap-1.5 rounded-lg bg-slate-800 px-3 py-1.5 text-xs font-medium text-slate-200 transition hover:bg-slate-700 hover:text-white ring-1 ring-white/10"
+            className="hidden sm:flex items-center gap-1.5 rounded-[6px] border border-[var(--border-hairline)] bg-[var(--bg-elevated)] text-[var(--text-ink)] px-2.5 py-1.5 text-xs font-medium hover:border-[var(--text-mute)] transition-colors cursor-pointer"
           >
-            <span>Webhook Simulator</span>
+            <Radio className="h-3 w-3 text-[var(--text-mute)]" />
+            <span>Webhooks</span>
           </button>
 
+          {/* Settings Modal Trigger */}
           <button
             onClick={onOpenSettings}
-            className="flex items-center gap-1.5 rounded-lg bg-slate-800/80 p-2 text-slate-400 transition hover:bg-slate-700 hover:text-white ring-1 ring-white/10"
-            title="Configure Sandbox & AI Keys"
+            className="flex items-center justify-center w-8 h-8 rounded-[6px] border border-[var(--border-hairline)] bg-[var(--bg-elevated)] text-[var(--text-body)] hover:text-[var(--text-ink)] hover:border-[var(--text-mute)] transition-colors cursor-pointer"
+            title="Configure Credentials & Settings"
           >
-            <Sliders className="h-4 w-4" />
+            <Sliders className="h-3.5 w-3.5" />
           </button>
 
+          {/* Reset Runs */}
           <button
             onClick={onResetRuns}
-            className="flex items-center gap-1.5 rounded-lg bg-slate-800/80 p-2 text-slate-400 transition hover:bg-slate-700 hover:text-rose-400 ring-1 ring-white/10"
-            title="Reset Run History"
+            className="flex items-center justify-center w-8 h-8 rounded-[6px] border border-[var(--border-hairline)] bg-[var(--bg-elevated)] text-[var(--text-body)] hover:text-[var(--text-ink)] hover:border-[var(--text-mute)] transition-colors cursor-pointer"
+            title="Reset Test Run History"
           >
-            <RotateCcw className="h-4 w-4" />
+            <RotateCcw className="h-3.5 w-3.5" />
           </button>
+
+          {/* Dark / Light Mode Switcher */}
+          <ThemeToggle />
         </div>
       </div>
     </header>

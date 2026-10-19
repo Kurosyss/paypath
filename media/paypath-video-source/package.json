@@ -1,0 +1,10 @@
+{
+  "name": "paypath-video-source",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npx hyperframes preview",
+    "check": "npx hyperframes check",
+    "render": "npx hyperframes render --output ../paypath-product-launch.mp4"
+  }
+}

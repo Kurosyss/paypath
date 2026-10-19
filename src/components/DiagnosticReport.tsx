@@ -7,7 +7,6 @@ import {
   FileCheck2,
   Copy,
   Check,
-  ArrowRight,
   ShieldAlert,
   AlertCircle,
   Lightbulb,
@@ -36,13 +35,13 @@ export function DiagnosticReport({
 
   if (!diagnosis) {
     return (
-      <div className="rounded-xl border border-white/10 bg-slate-900/60 p-8 text-center backdrop-blur-md">
-        <Sparkles className="mx-auto h-8 w-8 text-slate-600 animate-pulse" />
-        <h4 className="mt-3 text-sm font-semibold text-slate-300">
+      <div className="rounded-[12px] border border-[var(--border-hairline)] bg-[var(--bg-elevated)] p-12 text-center shadow-whisper transition-colors">
+        <Sparkles className="mx-auto h-8 w-8 text-[var(--text-mute)]" />
+        <h4 className="mt-3 text-sm font-semibold text-[var(--text-ink)]">
           No Diagnostic Report Available
         </h4>
-        <p className="mt-1 text-xs text-slate-500 max-w-md mx-auto">
-          Execute a test scenario to trigger AI-assisted root-cause diagnosis, code diff generation, and regression proposal.
+        <p className="mt-1 text-xs text-[var(--text-body)] max-w-md mx-auto">
+          Execute a test scenario in the Scenario Lab to trigger AI-assisted root-cause diagnosis, code diff generation, and regression proposals.
         </p>
       </div>
     );
@@ -61,56 +60,64 @@ export function DiagnosticReport({
   };
 
   return (
-    <div className="rounded-xl border border-white/10 bg-slate-900/60 p-6 backdrop-blur-md space-y-6">
+    <div className="rounded-[12px] border border-[var(--border-hairline)] bg-[var(--bg-elevated)] p-6 shadow-whisper space-y-6 transition-colors">
       {/* Header & Meta */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[var(--border-hairline)] pb-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="flex h-2 w-2 rounded-full bg-cyan-400 animate-ping" />
-            <h3 className="text-base font-bold text-white flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-cyan-400" />
-              AI Diagnostic Analysis & Fix Studio
+            <h3 className="text-base font-semibold text-[var(--text-ink)] tracking-[-0.4px] flex items-center gap-2">
+              <Cpu className="h-4 w-4 text-[var(--text-mute)]" />
+              {diagnosis.modelName?.includes('Gemini')
+                ? 'AI Diagnostic Analysis & Fix Studio'
+                : 'Diagnostic Analysis & Fix Studio'}
             </h3>
           </div>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-[var(--text-body)] mt-0.5">
             Root-cause hypothesis synthesized from sanitized network traces and invariant checks.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          {/* AI Model Badge */}
-          <div className="flex items-center gap-1.5 rounded-lg bg-purple-950/60 px-2.5 py-1 text-xs font-mono text-purple-300 border border-purple-800/50">
-            <Cpu className="h-3.5 w-3.5 text-purple-400" />
+          {/* Engine Model Badge */}
+          <div className="flex items-center gap-1.5 rounded-[6px] bg-[var(--bg-canvas)] px-2.5 py-1 text-xs font-mono text-[var(--text-ink)] border border-[var(--border-hairline)] shadow-whisper">
+            <Cpu className="h-3.5 w-3.5 text-[var(--text-mute)]" />
             <span>{diagnosis.modelName}</span>
           </div>
 
-          {/* Confidence Score */}
-          <div className="flex items-center gap-1.5 rounded-lg bg-cyan-950/60 px-2.5 py-1 text-xs font-mono text-cyan-300 border border-cyan-800/50">
-            <span>Confidence:</span>
-            <span className="font-bold text-cyan-400">{diagnosis.confidence}%</span>
-          </div>
+          {/* Verification Mode Badge */}
+          {diagnosis.modelName?.includes('Gemini') ? (
+            <div className="flex items-center gap-1.5 rounded-[6px] bg-[var(--bg-canvas)] px-2.5 py-1 text-xs font-mono text-[var(--text-ink)] border border-[var(--border-hairline)] font-medium shadow-whisper">
+              <span className="text-[var(--text-mute)]">Confidence:</span>
+              <span className="font-semibold text-[var(--text-ink)]">{diagnosis.confidence}%</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5 rounded-[6px] bg-[var(--bg-canvas)] px-2.5 py-1 text-xs font-mono text-[var(--text-ink)] border border-[var(--border-hairline)] font-medium shadow-whisper">
+              <span className="text-[var(--text-mute)]">Verification:</span>
+              <span className="font-semibold text-[var(--text-ink)]">Deterministic Rules</span>
+            </div>
+          )}
         </div>
       </div>
 
       {/* 1. Deterministic Invariant Violations */}
       {failedInvariants.length > 0 && (
-        <div className="rounded-lg border border-rose-500/30 bg-rose-950/20 p-4 space-y-2">
-          <div className="flex items-center gap-2 text-rose-300 font-semibold text-xs">
-            <ShieldAlert className="h-4 w-4 text-rose-400" />
+        <div className="rounded-[8px] border border-[var(--border-hairline)] bg-[var(--bg-canvas)] p-4 space-y-2">
+          <div className="flex items-center gap-2 text-[var(--text-ink)] font-semibold text-xs">
+            <ShieldAlert className="h-4 w-4 shrink-0 text-[var(--text-mute)]" />
             <span>Deterministic Invariant Violations Detected ({failedInvariants.length})</span>
           </div>
           <div className="space-y-1.5 pt-1">
             {failedInvariants.map((inv) => (
               <div
                 key={inv.id}
-                className="rounded bg-rose-950/40 p-2.5 text-xs border border-rose-800/30 flex flex-col sm:flex-row sm:items-center justify-between gap-2"
+                className="rounded-[6px] bg-[var(--bg-elevated)] p-2.5 text-xs border border-[var(--border-hairline)] flex flex-col sm:flex-row sm:items-center justify-between gap-2"
               >
                 <div>
-                  <span className="font-mono font-bold text-rose-400 mr-2">{inv.id}</span>
-                  <span className="font-medium text-slate-200">{inv.name}: </span>
-                  <span className="text-rose-200/90">{inv.message}</span>
+                  <span className="font-mono font-bold text-[var(--text-ink)] mr-2">{inv.id}</span>
+                  <span className="font-medium text-[var(--text-ink)]">{inv.name}: </span>
+                  <span className="text-[var(--text-body)]">{inv.message}</span>
                 </div>
-                <div className="text-[10px] font-mono text-rose-300/70 whitespace-nowrap">
+                <div className="text-[10px] font-mono text-[var(--text-mute)] whitespace-nowrap">
                   Severity: {inv.severity}
                 </div>
               </div>
@@ -121,28 +128,28 @@ export function DiagnosticReport({
 
       {/* 2. Root Cause Hypothesis */}
       <div className="space-y-2">
-        <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-          <Lightbulb className="h-3.5 w-3.5 text-amber-400" />
+        <h4 className="font-mono text-xs uppercase tracking-wider text-[var(--text-mute)] font-medium flex items-center gap-1.5">
+          <Lightbulb className="h-3.5 w-3.5 text-[var(--text-mute)]" />
           Root Cause Hypothesis
         </h4>
-        <div className="rounded-lg border border-white/10 bg-slate-950/70 p-4 text-sm text-slate-200 leading-relaxed">
+        <div className="rounded-[8px] border border-[var(--border-hairline)] bg-[var(--bg-canvas)] p-4 text-xs text-[var(--text-ink)] leading-relaxed">
           {diagnosis.rootCauseHypothesis}
         </div>
       </div>
 
       {/* 3. Observed Evidence */}
       <div className="space-y-2">
-        <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-          <AlertCircle className="h-3.5 w-3.5 text-cyan-400" />
+        <h4 className="font-mono text-xs uppercase tracking-wider text-[var(--text-mute)] font-medium flex items-center gap-1.5">
+          <AlertCircle className="h-3.5 w-3.5 text-[var(--text-mute)]" />
           Observed Factual Evidence ({diagnosis.evidence.length})
         </h4>
         <ul className="space-y-1.5">
           {diagnosis.evidence.map((ev, idx) => (
             <li
               key={idx}
-              className="rounded bg-slate-950/50 p-2.5 text-xs text-slate-300 border border-white/5 flex items-start gap-2"
+              className="rounded-[6px] bg-[var(--bg-canvas)] p-2.5 text-xs text-[var(--text-body)] border border-[var(--border-hairline)] flex items-start gap-2"
             >
-              <span className="font-mono text-cyan-400 font-bold mt-0.5">[{idx + 1}]</span>
+              <span className="font-mono text-[var(--text-ink)] font-semibold mt-0.5">[{idx + 1}]</span>
               <span>{ev}</span>
             </li>
           ))}
@@ -152,17 +159,17 @@ export function DiagnosticReport({
       {/* 4. Recommended Code Fix Diff */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-            <FileCheck2 className="h-3.5 w-3.5 text-emerald-400" />
+          <h4 className="font-mono text-xs uppercase tracking-wider text-[var(--text-mute)] font-medium flex items-center gap-1.5">
+            <FileCheck2 className="h-3.5 w-3.5 text-[var(--text-mute)]" />
             Recommended Code Fix Diff ({diagnosis.recommendedCodeFix.filename})
           </h4>
           <button
             onClick={copyDiff}
-            className="flex items-center gap-1 text-[11px] font-mono text-cyan-400 hover:text-cyan-300"
+            className="flex items-center gap-1 text-[11px] font-mono text-[var(--text-ink)] hover:underline cursor-pointer"
           >
             {copiedDiff ? (
               <>
-                <Check className="h-3 w-3 text-emerald-400" /> Copied Diff
+                <Check className="h-3 w-3 text-[var(--text-ink)]" /> Copied Diff
               </>
             ) : (
               <>
@@ -172,19 +179,19 @@ export function DiagnosticReport({
           </button>
         </div>
 
-        <p className="text-xs text-slate-400 leading-relaxed">
+        <p className="text-xs text-[var(--text-body)] leading-relaxed">
           {diagnosis.recommendedCodeFix.explanation}
         </p>
 
-        <div className="rounded-lg border border-white/10 bg-slate-950 p-3.5 font-mono text-xs overflow-x-auto custom-scrollbar">
-          <pre className="text-slate-300 whitespace-pre leading-relaxed">
+        <div className="rounded-[8px] border border-[var(--border-hairline)] bg-[var(--bg-canvas)] p-3.5 font-mono text-xs overflow-x-auto custom-scrollbar">
+          <pre className="text-[var(--text-ink)] whitespace-pre leading-relaxed">
             {diagnosis.recommendedCodeFix.diff.split('\n').map((line, i) => {
-              let color = 'text-slate-300';
-              if (line.startsWith('+')) color = 'text-emerald-400 bg-emerald-950/30';
-              if (line.startsWith('-')) color = 'text-rose-400 bg-rose-950/30';
-              if (line.startsWith('@')) color = 'text-cyan-400 font-bold';
+              let style = 'text-[var(--text-body)]';
+              if (line.startsWith('+')) style = 'text-[var(--text-ink)] font-semibold bg-[var(--border-hairline-soft)]';
+              if (line.startsWith('-')) style = 'text-[var(--text-mute)] line-through opacity-70';
+              if (line.startsWith('@')) style = 'text-[var(--text-mute)] font-bold';
               return (
-                <div key={i} className={`${color} px-1 rounded`}>
+                <div key={i} className={`${style} px-1.5 py-0.5 rounded-[2px]`}>
                   {line}
                 </div>
               );
@@ -196,17 +203,17 @@ export function DiagnosticReport({
       {/* 5. Proposed Regression Test */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-            <Play className="h-3.5 w-3.5 text-purple-400" />
+          <h4 className="font-mono text-xs uppercase tracking-wider text-[var(--text-mute)] font-medium flex items-center gap-1.5">
+            <Play className="h-3.5 w-3.5 text-[var(--text-mute)]" />
             Proposed Automated Regression Test
           </h4>
           <button
             onClick={copyTest}
-            className="flex items-center gap-1 text-[11px] font-mono text-cyan-400 hover:text-cyan-300"
+            className="flex items-center gap-1 text-[11px] font-mono text-[var(--text-ink)] hover:underline cursor-pointer"
           >
             {copiedTest ? (
               <>
-                <Check className="h-3 w-3 text-emerald-400" /> Copied Test
+                <Check className="h-3 w-3 text-[var(--text-ink)]" /> Copied Test
               </>
             ) : (
               <>
@@ -216,18 +223,18 @@ export function DiagnosticReport({
           </button>
         </div>
 
-        <div className="rounded-lg border border-white/10 bg-slate-950 p-3.5 font-mono text-xs text-slate-300 overflow-x-auto custom-scrollbar">
+        <div className="rounded-[8px] border border-[var(--border-hairline)] bg-[var(--bg-canvas)] p-3.5 font-mono text-xs text-[var(--text-ink)] overflow-x-auto custom-scrollbar">
           <pre>{diagnosis.proposedRegressionTest.code}</pre>
         </div>
       </div>
 
       {/* 6. Next Diagnostic Action & One-Click Apply */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 rounded-lg bg-cyan-950/30 p-4 border border-cyan-800/40">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 rounded-[8px] bg-[var(--bg-canvas)] p-4 border border-[var(--border-hairline)] shadow-whisper">
         <div>
-          <span className="text-[10px] font-mono uppercase tracking-wider text-cyan-400 block">
-            Next Action
+          <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--text-mute)] block font-medium">
+            Recommended Action
           </span>
-          <span className="text-xs text-slate-200 font-medium">
+          <span className="text-xs text-[var(--text-ink)] font-medium mt-0.5 block">
             {diagnosis.nextDiagnosticAction}
           </span>
         </div>
@@ -236,7 +243,7 @@ export function DiagnosticReport({
           <button
             onClick={onApplyFixAndVerify}
             disabled={isVerifying}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-lg bg-emerald-500 px-4 py-2 text-xs font-bold text-slate-950 transition hover:bg-emerald-400 disabled:opacity-50 shadow-md shadow-emerald-500/20"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-[100px] bg-[var(--text-ink)] text-[var(--bg-canvas)] px-5 h-10 text-xs font-medium hover:opacity-90 disabled:opacity-50 transition-opacity cursor-pointer shadow-whisper"
           >
             {isVerifying ? (
               <>
@@ -252,7 +259,7 @@ export function DiagnosticReport({
       </div>
 
       {/* Disclaimer */}
-      <div className="text-[11px] text-slate-500 border-t border-white/5 pt-3">
+      <div className="text-[11px] text-[var(--text-mute)] border-t border-[var(--border-hairline)] pt-3 leading-relaxed">
         {diagnosis.disclaimer}
       </div>
     </div>

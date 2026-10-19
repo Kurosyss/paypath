@@ -1,207 +1,308 @@
-# PayPath — PayPal Payment Reliability Lab & AI Diagnostic Engine
+# PayPath — Payment Reliability Lab
 
-> **Test real PayPal payment flows, expose failure-handling weaknesses, and use AI to diagnose payment integration errors and verify proposed fixes.**
+![PayPath Banner](public/brand/paypath-social-preview.png)
 
-[![PayPal Developer Platform](https://img.shields.io/badge/PayPal_API-Orders_v2-00457C?logo=paypal&logoColor=white)](https://developer.paypal.com)
-[![Google Gemini](https://img.shields.io/badge/AI_Engine-Gemini_2.5_Flash-8E75C2?logo=google&logoColor=white)](https://ai.google.dev)
-[![Next.js 16](https://img.shields.io/badge/Next.js-16_App_Router-000000?logo=next.js&logoColor=white)](https://nextjs.org)
-[![TypeScript 5](https://img.shields.io/badge/TypeScript-5.0-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
-[![Automated Tests](https://img.shields.io/badge/Tests-13%20Passed-emerald.svg)](https://vitest.dev)
-[![License: MIT](https://img.shields.io/badge/License-MIT-cyan.svg)](./LICENSE)
+A developer testing harness and diagnostic workbench for PayPal checkout integrations. PayPath reproduces edge-case payment failures, injects chaos conditions, verifies transactions against 10 deterministic safety invariants, and generates resilient code fixes.
+
+`Next.js 16` | `TypeScript 5` | `Tailwind CSS v4` | `PayPal Orders v2 REST` | `Vitest 5` | `Deterministic Rule Engine`
 
 ---
 
-## 🎯 Executive Summary & Problem Statement
+## Table of Contents
 
-Most e-commerce and SaaS checkouts appear to work perfectly during a happy-path demo. But when unexpected production chaos hits, integrations fail in catastrophic ways:
-
-1. **Decline Swallowing:** A card is declined by the issuer (`INSTRUMENT_DECLINED`), but careless error-handling swallows the 422 HTTP status and erroneously displays an order confirmation page to the buyer—shipping goods without getting paid.
-2. **Blind Retries & Double Debits:** A capture request experiences a network socket drop or 504 Gateway Timeout. The backend does not know if the payment went through and blindly retries `POST /capture`, triggering 422 errors or double-charging customer accounts.
-3. **Webhook Duplication & Double Credits:** Payment webhooks deliver at-least-once. Delayed network retries re-deliver `PAYMENT.CAPTURE.COMPLETED`, causing naive handlers to credit accounts or extend subscriptions twice.
-4. **State Machine Regressions:** An asynchronous `CHECKOUT.ORDER.APPROVED` webhook arrives late after the order has already been `COMPLETED`, reverting the order back to a pending state.
-5. **Forged Webhooks:** Webhook handlers process incoming event payloads without cryptographic signature verification (`/v1/notifications/verify-webhook-signature`), leaving merchants vulnerable to spoofing.
-
-**PayPath is not another generic AI shopping chatbot.** It is a specialized **Payment Reliability Lab & Developer Diagnostic Studio** designed to help indie developers, SaaS founders, and engineering teams reproduce, chaos-test, and harden their PayPal integrations before going to production.
+- [Product Walkthrough](#product-walkthrough)
+- [Product Screenshots](#product-screenshots)
+- [Problem and Solution](#problem-and-solution)
+- [Key Features](#key-features)
+- [Architecture](#architecture)
+- [Technology Stack](#technology-stack)
+- [Setup and Local Development](#setup-and-local-development)
+- [Testing and Verification](#testing-and-verification)
+- [Security and Limitations](#security-and-limitations)
+- [License and Contribution](#license-and-contribution)
 
 ---
 
-## 🏛️ System Architecture
+## Product Walkthrough
 
-PayPath is built with Next.js (App Router), TypeScript, Tailwind CSS, official PayPal REST APIs, and a Google Gemini AI Diagnostic adapter.
+A 23-second product launch video provides an overview of the PayPath testing workflow, including fault injection, invariant violation detection, and safe state reconciliation.
+
+[![PayPath Launch Video Teaser](media/paypath-product-launch.jpg)](media/paypath-product-launch.mp4)
+
+*Note: GitHub does not support inline playback of local video files. Click the preview above to view or download the high-resolution 23-second launch video (`media/paypath-product-launch.mp4`). This video is a product teaser and does not replace the full technical demonstration.*
+
+---
+
+## Product Screenshots
+
+The following screenshots are captured directly from the running PayPath application at 1920x1080 resolution in dark mode:
+
+### 1. Main Dashboard and Authoritative Payment Overview
+![PayPath Dashboard](docs/screenshots/01-dashboard.png)
+*Main dashboard showing runtime environment connectivity, active deterministic diagnostic engine mode, persisted settlement details with masked transaction identifiers, and the primary navigation structure.*
+
+### 2. Scenario Lab and Chaos Testing Controls
+![PayPath Scenario Lab](docs/screenshots/02-scenario-lab.png)
+*Scenario Lab interface showing Scenario C (Uncertain Capture Outcome and State Reconciliation) selected in Fault Injection mode under the Unfixed Baseline state, with execution outcome reporting a failed run.*
+
+### 3. Failure Detection and Deterministic Invariant Violation
+![PayPath Failure Detection](docs/screenshots/03-failure-detection.png)
+*Failure analysis panel showing a simulated 504 Gateway Timeout during capture, triggering invariant INV-002 (No Blind Retry Without Reconciliation) at Critical severity, attributed to the deterministic rule engine.*
+
+### 4. Diagnostic Studio and Proposed Code Diff
+![PayPath Diagnostic Studio](docs/screenshots/04-ai-diagnostics.png)
+*Diagnostic Studio displaying the root-cause hypothesis, observed factual trace evidence, and a unified Git diff for `src/services/paypal-reconciliation.ts` implementing authoritative ground-truth order reconciliation.*
+
+### 5. Regression Testing and Execution History
+![PayPath Regression Test Suite](docs/screenshots/05-regression-results.png)
+*Regression suite audit trail contrasting an initial unfixed failed execution against a subsequent completed execution that passed all safety invariants with the resilience fix applied.*
+
+### 6. PayPal Webhook Simulator and Deduplication
+![PayPath Webhook Simulator](docs/screenshots/06-webhook-simulator.png)
+*Interactive webhook simulator dispatching duplicate `PAYMENT.CAPTURE.COMPLETED` events, validating that the handler recognizes identical event identifiers and returns an acknowledged skipped action.*
+
+---
+
+## Problem and Solution
+
+E-commerce checkouts often function during happy-path integration tests, but encounter critical failures under production edge cases:
+
+1. **Blind Retries on Network Timeouts:** When a client-to-server connection drops or a 504 Gateway Timeout occurs during capture, the client cannot confirm whether the charge succeeded. Blindly retrying the capture request risks duplicate debits or upstream 422 errors.
+   - *PayPath Safeguard:* Enforces invariant `INV-002`. The checkout must query `GET /v2/checkout/orders/{id}` to reconcile state before attempting recovery actions.
+
+2. **Swallowed Card Declines:** Upstream issuers reject cards with `INSTRUMENT_DECLINED`. Naive client implementations that fail to inspect the HTTP 422 status and response payload may misreport success, causing merchants to fulfill unpaid orders.
+   - *PayPath Safeguard:* Enforces invariant `INV-003`. All capture responses must be validated for explicit `COMPLETED` status prior to downstream fulfillment.
+
+3. **Duplicate Webhook Delivery:** Payment webhooks operate under at-least-once delivery guarantees. Delayed retries can deliver identical `PAYMENT.CAPTURE.COMPLETED` payloads multiple times.
+   - *PayPath Safeguard:* Enforces invariant `INV-004`. The webhook receiver checks event identifiers against an atomic store, returning `ACKNOWLEDGED_DUPLICATE_SKIPPED` on replays.
+
+4. **Out-of-Order State Regressions:** Network latencies can cause an earlier `CHECKOUT.ORDER.APPROVED` webhook to arrive after an authoritative `PAYMENT.CAPTURE.COMPLETED` event.
+   - *PayPath Safeguard:* Enforces invariant `INV-001`. Payment states transition monotonically; terminal states (`COMPLETED`, `VOIDED`, `DECLINED`) cannot be overwritten by pending events.
+
+---
+
+## Key Features
+
+- **PayPal Orders v2 REST Integration:** Functional endpoints for order creation (`/api/paypal/create-order`), order capture (`/api/paypal/capture-order`), and order reconciliation (`/api/paypal/reconcile`) communicating with the PayPal Sandbox.
+- **Authoritative State Reconciliation:** Ground-truth validation querying PayPal order details directly to determine true transaction status after ambiguous network outcomes.
+- **10 Deterministic Safety Invariants:** Strict programmatic rules evaluating every execution trace:
+  - `INV-001`: Monotonic State Progression
+  - `INV-002`: No Blind Retry Without Reconciliation
+  - `INV-003`: Strict Decline Detection
+  - `INV-004`: Webhook Event Deduplication
+  - `INV-005`: Webhook Signature Verification
+  - `INV-006`: Idempotency Header Enforcement
+  - `INV-007`: Zero Credential Leakage
+  - `INV-008`: Capture Requires Buyer Approval
+  - `INV-009`: Authoritative Ledger Confirmation
+  - `INV-010`: Graceful Error Diagnostics
+- **7 Reliability Testing Scenarios:** Catalog spanning core flows, error handling, network drops, idempotency, signature validation, out-of-order concurrency, and API robustness.
+- **Fault-Injection Engine:** Controlled local simulation of 504 Gateway Timeouts, network socket drops, and mock response headers (`PayPal-Mock-Response`).
+- **Trace Sanitization:** Recursive credential redactor that scrubs client secrets, OAuth bearer tokens, authorization headers, and payment card numbers before storage or presentation.
+- **Diagnostic Studio:** Automated root-cause analysis based on trace anomalies and invariant violations, producing unified Git diffs and regression test drafts.
+- **Webhook Simulator:** In-app testing modal for dispatching test events, validating duplicate event replay handling, and testing cryptographic signature verification.
+- **Local Run Persistence:** Structured file storage under `.paypath-data/` tracking run histories, invariant audit trails, and payment confirmations.
+
+*Distinction note: Live PayPal Sandbox calls execute against `api-m.sandbox.paypal.com`. Fault scenarios (such as simulated 504 timeouts) inject mock network behaviors locally to safely test error handlers. Proposed code fixes are formatted diffs designed for developer review.*
+
+---
+
+## Architecture
+
+The following diagram illustrates the relationship between the dashboard, API routes, reliability engines, and storage components:
 
 ```mermaid
-graph TD
-    Client["Developer Dashboard<br/>(Next.js App Router / React)"]
-    API["PayPath API Layer<br/>(/api/scenarios, /api/paypal, /api/ai)"]
-    Sanitizer["Security Sanitizer<br/>(Redacts Secrets, Tokens & PII)"]
-    Invariants["Deterministic Invariant Engine<br/>(10 Strict Payment Safety Rules)"]
-    PayPal["PayPal Sandbox API<br/>(api-m.sandbox.paypal.com)"]
-    Gemini["Google Gemini 2.5 Flash /<br/>Deterministic Fallback Engine"]
-    Storage["Lightweight Local Storage<br/>(Runs & Webhook Dedup Cache)"]
+flowchart TD
+    subgraph ClientLayer [Client Layer]
+        UI[Developer Dashboard / Next.js React]
+        Card[Authoritative Payment Card]
+        Lab[Scenario Lab & Chaos Controls]
+        Studio[Diagnostic Studio & Fix Diff]
+        WHModal[Webhook Simulator]
+    end
 
-    Client -->|1. Run Scenario| API
-    API -->|2. Dispatch Order/Capture/Webhook| PayPal
-    API -->|3. Fault Injection / Mock Headers| PayPal
-    PayPal -->|4. Raw Response / Webhook Event| API
-    API -->|5. Filter & Sanitize Traces| Sanitizer
-    Sanitizer -->|6. Check Payment Safety Rules| Invariants
-    Invariants -->|7. Evaluated Invariants| Gemini
-    Sanitizer -->|8. Sanitized Traces| Gemini
-    Gemini -->|9. Root Cause + Git Diff + Regression Test| API
-    API -->|10. Persist Run & Dedup| Storage
-    API -->|11. Render Trace Timeline & Fix Studio| Client
+    subgraph APILayer [Next.js Route Handlers]
+        ConfigAPI["/api/config"]
+        PayPalAPI["/api/paypal (create, capture, reconcile)"]
+        ScenariosAPI["/api/scenarios (list, run)"]
+        RunsAPI["/api/runs"]
+        WebhookAPI["/api/paypal/webhook"]
+    end
+
+    subgraph CoreEngine [Core Reliability Engine]
+        ChaosRunner[Scenarios Engine & Fault Injector]
+        Sanitizer[Recursive Trace & Secret Sanitizer]
+        InvariantEngine[10 Deterministic Safety Invariants]
+        DiagEngine[Deterministic Rule Engine / Optional Gemini Adapter]
+    end
+
+    subgraph ExternalAndStorage [External Services & Storage]
+        PayPalSandbox[PayPal Orders v2 Sandbox API]
+        LocalStorage[Local Run & Webhook Dedup Cache]
+        GeminiAPI[Optional Google Gemini API]
+    end
+
+    UI --> ConfigAPI
+    UI --> ScenariosAPI
+    UI --> RunsAPI
+    Card --> PayPalAPI
+    WHModal --> WebhookAPI
+
+    PayPalAPI --> PayPalSandbox
+    ScenariosAPI --> ChaosRunner
+    ChaosRunner -->|Live Calls| PayPalSandbox
+    ChaosRunner -->|Injected Faults| Sanitizer
+    PayPalSandbox -->|Raw Responses| Sanitizer
+    Sanitizer --> InvariantEngine
+    InvariantEngine --> DiagEngine
+    Sanitizer --> DiagEngine
+    DiagEngine -.->|If Configured| GeminiAPI
+    WebhookAPI --> LocalStorage
+    RunsAPI --> LocalStorage
+    CoreEngine --> LocalStorage
 ```
 
 ---
 
-## 🧪 7 Comprehensive Reliability Scenarios
+## Technology Stack
 
-| Scenario Code | Title | Category | Focus Area |
-| :--- | :--- | :--- | :--- |
-| **SCENARIO-A** | **Standard Checkout Flow & Capture** | `Core Flow` | Order creation with `PayPal-Request-Id`, payer approval, server-side capture, authoritative confirmation. |
-| **SCENARIO-B** | **Payment Instrument Declined** | `Error Handling` | PayPal Sandbox negative testing (`INSTRUMENT_DECLINED`). Verifies UI detects card rejection without false fulfillment. |
-| **SCENARIO-C** | **Uncertain Capture & Reconciliation** | `Fault Recovery` | Injected 504 Gateway Timeout. Proves state reconciliation (`GET /v2/checkout/orders/{id}`) prevents blind double retries. |
-| **SCENARIO-D** | **Duplicate Webhook Delivery** | `Idempotency` | Multiple identical deliveries of `PAYMENT.CAPTURE.COMPLETED`. Verifies atomic deduplication (`event_id`). |
-| **SCENARIO-E** | **Webhook Signature Verification** | `Security` | Rejects forged/tampered webhooks using PayPal's cryptographic signature verification endpoint. |
-| **SCENARIO-F** | **Out-of-Order Webhooks** | `Concurrency` | Prevents late-arriving `CHECKOUT.ORDER.APPROVED` from regressing settled `COMPLETED` orders. |
-| **SCENARIO-G** | **API & Config Error Diagnostics** | `API Robustness` | Tests invalid currencies (422) and authentication failures (401), ensuring zero credential leaks in logs. |
+| Layer | Component | Version / Specification |
+| :--- | :--- | :--- |
+| **Framework** | Next.js (App Router, Turbopack) | `16.4.2` |
+| **Language** | TypeScript | `5.0+` |
+| **UI Library** | React | `19.3.0` |
+| **Styling** | Tailwind CSS | `4.0` |
+| **Icons** | Lucide React | `1.59.0` |
+| **Testing** | Vitest | `5.0.5` |
+| **Payment API** | PayPal Orders v2 REST API | Sandbox environment |
+| **AI Integration** | Google GenAI SDK (`@google/genai`) | `^2.30.0` (Optional adapter) |
 
----
+### AI Provider Status and Disclosure
 
-## 🔒 10 Deterministic Payment Invariants
+The runtime operates with the **PayPath Deterministic Payment Rule Engine** as its active diagnostic provider. When no `GEMINI_API_KEY` is supplied, all invariant checks, root-cause analyses, Git diffs, and test recommendations are generated deterministically by the offline rule engine.
 
-Deterministic rules—not AI hallucinations—objectively decide whether a test run passes or fails:
-
-1. **INV-001 (Monotonic State Progression):** Terminal states (`COMPLETED`, `VOIDED`, `DECLINED`) can never revert backward.
-2. **INV-002 (No Blind Retry Without Reconciliation):** Network drops during capture require authoritative state query before retrying.
-3. **INV-003 (Strict Decline Detection):** `INSTRUMENT_DECLINED` must immediately halt fulfillment and display a payment failure notice.
-4. **INV-004 (Webhook Event Deduplication):** Identical `event_id` deliveries trigger exactly one business fulfillment.
-5. **INV-005 (Webhook Signature Verification):** Cryptographic verification required prior to payload processing.
-6. **INV-006 (Idempotency Header Enforcement):** All state-mutating requests must supply `PayPal-Request-Id`.
-7. **INV-007 (Zero Credential Leakage):** Access tokens, client secrets, and credit card numbers are strictly redacted from traces.
-8. **INV-008 (Capture Requires Buyer Approval):** An order in `CREATED` state cannot be captured without payer authorization.
-9. **INV-009 (Authoritative Ledger Confirmation):** Final success requires server-side `COMPLETED` confirmation from PayPal API.
-10. **INV-010 (Graceful Error Diagnostics):** All upstream API failures produce structured, typed errors with zero stack dump crashes.
+The codebase includes an optional Google Gemini adapter (`src/lib/ai-diagnostic-engine.ts`) supporting `gemini-2.5-flash`. To activate live Gemini reasoning, supply a valid API key in `.env.local`. When unconfigured, the application runs fully offline without external AI dependencies.
 
 ---
 
-## 🤖 AI Diagnostic Engine & Fix Studio
-
-PayPath pairs deterministic rule checking with deep AI diagnosis:
-
-- **Input:** Sanitized request/response traces, HTTP headers, state transitions, latency metrics, and invariant violation reports.
-- **Provider:** Powered by **Google Gemini 2.5 Flash** (via the modern `@google/genai` SDK), with an automatic, transparent fallback to an offline **Deterministic Payment Rule Engine** when API keys are unconfigured.
-- **Outputs:**
-  1. **Concise Root-Cause Hypothesis:** Identifies the precise architectural defect.
-  2. **Factual Evidence List:** Numbered citations from actual execution events.
-  3. **Confidence Score:** 0–100% confidence rating.
-  4. **Recommended Code Fix:** Unified Git diff syntax showing the drop-in resilient replacement.
-  5. **Proposed Regression Test:** Executable TypeScript/Vitest test code.
-  6. **One-Click Apply & Re-Verify:** Reruns the scenario with the resilient patch to confirm regression resolution.
-
----
-
-## 🚀 Quick Start Guide
+## Setup and Local Development
 
 ### Prerequisites
-- Node.js 18+ (tested on Node v24.18)
-- npm 9+
 
-### 1. Clone & Install
+- Node.js `18.0.0` or higher (verified on Node.js v24)
+- npm `9.0.0` or higher
+- Optional: A PayPal Developer Sandbox account
+
+### 1. Clone the Repository
+
 ```bash
 git clone https://github.com/your-username/paypath.git
 cd paypath
+```
+
+### 2. Install Dependencies
+
+```bash
 npm install
 ```
 
-### 2. Configure Environment (Optional for Sandbox Mode)
+### 3. Configure Environment Variables
+
+Create a local environment file from the template:
+
 ```bash
 cp .env.example .env.local
 ```
-Add your credentials in `.env.local`:
-```env
-PAYPAL_CLIENT_ID=your_sandbox_client_id
-PAYPAL_CLIENT_SECRET=your_sandbox_client_secret
-PAYPAL_WEBHOOK_ID=your_webhook_id
-GEMINI_API_KEY=your_gemini_api_key
-```
-> *Note: PayPath works straight out of the box with built-in high-fidelity fault-injection simulation and its offline expert rule engine if no keys are provided!*
 
-### 3. Run Automated Tests
+Populate `.env.local` with your configuration:
+
+```env
+# PayPal Sandbox Credentials (Required for live Sandbox API calls)
+PAYPAL_CLIENT_ID=your_paypal_sandbox_client_id_here
+PAYPAL_CLIENT_SECRET=your_paypal_sandbox_client_secret_here
+PAYPAL_WEBHOOK_ID=your_paypal_webhook_id_here
+PAYPAL_ENV=sandbox
+
+# AI Diagnostics (Optional: Leave blank to use Deterministic Rule Engine)
+GEMINI_API_KEY=your_gemini_api_key_here
+AI_MODEL=gemini-2.5-flash
+
+# Application Runtime
+PORT=3000
+NODE_ENV=development
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
+
+*Important: PayPath is designed strictly for testing in the PayPal Sandbox. It does not initiate or authorize real-money production transactions.*
+
+### 4. Run the Development Server
+
+```bash
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+### 5. Run the Automated Tests
+
 ```bash
 npm run test
 ```
-All 13 automated unit and integration tests run via Vitest in under 1 second.
 
-### 4. Start the Application
+### 6. Build and Start the Production Bundle
+
 ```bash
 npm run build
 npm run start
 ```
-Open **[http://localhost:3000](http://localhost:3000)** in your browser.
 
 ---
 
-## 💳 PayPal Sandbox Setup & Negative Testing
+## Testing and Verification
 
-To test real negative error conditions against the live PayPal Sandbox API:
+The following verification results have been confirmed in the current environment:
 
-1. Log into your [PayPal Developer Dashboard](https://developer.paypal.com/dashboard/).
-2. Navigate to **Testing Tools** > **Sandbox Accounts**.
-3. Click the `...` menu next to your Business account > **View/Edit Account** > **Settings**.
-4. Enable **Negative Testing** toggle.
-5. In PayPath, select **Scenario B** or any scenario with mode set to `Real Sandbox API`. PayPath automatically supplies the official `PayPal-Mock-Response` headers:
-   ```http
-   PayPal-Mock-Response: {"mock_application_codes": "INSTRUMENT_DECLINED"}
-   ```
-
----
-
-## 📊 Verification Matrix & Truthful Claims
-
-| Scenario | Execution Mode | Verification Status | Invariants Checked |
+| Test Scope | Target | Result | Evidence |
 | :--- | :--- | :--- | :--- |
-| **Scenario A** (Checkout & Capture) | `REAL SANDBOX` / `SIMULATED` | `[VERIFIED]` | INV-001, INV-006, INV-007, INV-009 |
-| **Scenario B** (Decline Handling) | `REAL SANDBOX` / `SIMULATED` | `[VERIFIED]` | INV-003, INV-007, INV-010 |
-| **Scenario C** (Uncertain Capture & Recon) | `LOCALLY SIMULATED FAULT` | `[VERIFIED]` | INV-001, INV-002, INV-006, INV-007 |
-| **Scenario D** (Duplicate Webhooks) | `LOCALLY SIMULATED FAULT` | `[VERIFIED]` | INV-004, INV-007 |
-| **Scenario E** (Signature Verification) | `REAL SANDBOX` / `SIMULATED` | `[VERIFIED]` | INV-005, INV-007 |
-| **Scenario F** (Out-of-Order Webhooks) | `LOCALLY SIMULATED FAULT` | `[VERIFIED]` | INV-001, INV-007 |
-| **Scenario G** (API & Config Errors) | `LOCALLY SIMULATED FAULT` | `[VERIFIED]` | INV-007, INV-010 |
-| **Unit & Integration Suite** | `AUTOMATED UNIT TEST` | `[VERIFIED - 13/13 PASS]` | Invariants, Sanitizer, State Machine |
+| **Unit & Integration Suite** | `tests/invariants.test.ts` | 5 passed | Evaluates decline, double-capture, and monotonic invariants |
+| **Unit & Integration Suite** | `tests/sanitization.test.ts` | 3 passed | Verifies scrubbing of tokens, secrets, and auth headers |
+| **Unit & Integration Suite** | `tests/scenarios.test.ts` | 5 passed | Validates scenario catalog, invariants mapping, and defaults |
+| **Production Build** | `next build` | 0 errors | All 19 static and dynamic routes compiled with Turbopack |
+| **Sandbox Connectivity** | PayPal Orders v2 API | Verified | Token retrieval, order creation, capture, and reconciliation |
+| **Fault Injection** | Scenario C (504 Timeout) | Verified | Simulates gateway timeout, detects INV-002, presents diff |
+| **Webhook Deduplication** | `/api/paypal/webhook` | Verified | Duplicate event ID yields `ACKNOWLEDGED_DUPLICATE_SKIPPED` |
+
+*Total automated unit tests: 13 passed out of 13 tests (execution time: ~1.4 seconds).*
 
 ---
 
-## 🎬 3-Minute Video Demo Script
+## Security and Limitations
 
-**Total Runtime:** 2 minutes 50 seconds
+### Security Architecture
 
-| Timestamp | Screen | Narration / Action |
-| :--- | :--- | :--- |
-| **0:00 - 0:25** | **Dashboard Header & Problem Statement** | "Hi everyone! This is PayPath—the PayPal Payment Reliability Lab. When building PayPal checkouts, developers test the happy path and assume it works. But what happens when a card declines, webhooks duplicate, or a network drops during capture? PayPath is the chaos-testing and AI diagnostic tool built to expose and fix these edge cases." |
-| **0:25 - 0:55** | **Scenario Lab — Exposing Scenario B (Decline)** | "Let's head into the Scenario Lab. We select Scenario B: Payment Instrument Declined. We run the test in vulnerable baseline mode. PayPal returns HTTP 422 with INSTRUMENT_DECLINED, but look at the outcome: FAILED! Our deterministic invariant INV-003 detected that naive checkout code swallowed the decline and misreported the order as COMPLETED." |
-| **0:55 - 1:35** | **AI Diagnostic Studio & Fix Studio** | "PayPath automatically transitions into the AI Diagnostic Studio. Notice that all credentials and card data have been stripped by our security sanitizer. Google Gemini 2.5 Flash analyzes the sanitized traces, forms a root-cause hypothesis with 98% confidence, outputs the exact unified git diff, and drafts an automated regression test." |
-| **1:35 - 2:05** | **One-Click Apply & Regression Verification** | "We click 'Apply Fix & Re-Verify Regression'. PayPath immediately re-executes the test with the resilient pattern. Now the final state is correctly marked DECLINED, and all deterministic invariants pass green! In the Regression Suite tab, we see the clear before-and-after audit trail." |
-| **2:05 - 2:35** | **Scenario C & Webhook Idempotency** | "Next, we run Scenario C: Uncertain Capture Outcome. We simulate a 504 network timeout. Rather than blindly retrying, PayPath demonstrates authoritative state reconciliation via GET /v2/checkout/orders. We can also open our Webhook Simulator to test duplicate delivery and watch event deduplication prevent double-fulfillment." |
-| **2:35 - 2:50** | **Conclusion & Impact** | "PayPath provides automated unit tests, real PayPal Sandbox integration, and AI diagnostics. It transforms brittle checkouts into battle-tested payment systems. Thank you!" |
+- **Server-Side Secret Isolation:** PayPal client secrets and API keys are only accessed inside Next.js server-side route handlers. They are never exported in client bundles or public environment variables.
+- **Recursive Credential Scrubbing:** Request headers, response bodies, and error stacks pass through `src/lib/sanitization.ts` before being written to disk, sent to client components, or transmitted to an optional AI provider.
+- **Identifier Masking:** Public-facing dashboard panels mask transaction identifiers (for example, `3JL9••••••••362V`).
+- **Cryptographic Webhook Verification:** The webhook endpoint verifies event integrity via PayPal's `/v1/notifications/verify-webhook-signature` API when a webhook ID is configured.
 
----
+### Known Limitations
 
-## 📋 Devpost Submission Checklist
-
-- [x] **Project Name:** PayPath
-- [x] **Tagline:** Test real PayPal payment flows, expose failure-handling weaknesses, and use AI to diagnose payment integration errors and verify proposed fixes.
-- [x] **Category:** PayPal Developer Platform + AI Developer Tooling & Payment Reliability
-- [x] **PayPal Integration:** Orders v2 REST API, OAuth2 token management, `PayPal-Request-Id` idempotency, `PayPal-Mock-Response` negative testing, Authoritative state reconciliation (`GET /orders/{id}`), Webhook signature verification (`/v1/notifications/verify-webhook-signature`).
-- [x] **AI Integration:** Google Gemini 2.5 Flash via `@google/genai` analyzing sanitized payment traces, synthesizing root-cause hypotheses, generating Git diffs, and proposing regression tests, with transparent deterministic fallback.
-- [x] **Working Prototype:** Fully functional Next.js dashboard running at `http://localhost:3000`.
-- [x] **Automated Tests:** 13 unit and integration tests passing (`vitest`).
-- [x] **Public Code Repository:** Clean git repository with MIT license and `.env.example`.
-- [x] **Zero Credential Leakage:** Automated recursive sanitizer redacting tokens, keys, and PII.
-- [x] **Video Demo Script:** Comprehensive sub-3-minute walkthrough included.
+- **Sandbox Scope:** PayPath targets PayPal Sandbox APIs. Sandbox latency, availability, and error responses can differ from production behavior.
+- **Simulated Faults:** Network timeouts (such as 504 Gateway Timeout) and card declines in fault mode are controlled local simulations designed to test application resiliency without requiring live network degradation.
+- **Local Webhook Receiver:** In local development, receiving live webhooks dispatched from PayPal requires a public forwarding tunnel (such as ngrok). The in-app Webhook Simulator provides end-to-end event testing locally without external tunnels.
 
 ---
 
-## 📄 License
+## License and Contribution
 
-This project is licensed under the [MIT License](./LICENSE).
+### License
+
+This project is licensed under the [MIT License](LICENSE).
+
+### Contributing
+
+1. Fork the repository.
+2. Create a feature branch: `git checkout -b feature/reliability-scenario`.
+3. Ensure automated tests pass: `npm run test`.
+4. Verify the production build: `npm run build`.
+5. Submit a pull request with a description of the reliability scenario or invariant addition.

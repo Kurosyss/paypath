@@ -126,6 +126,15 @@ export class PayPalClient {
     return { token: cachedToken.token, trace };
   }
 
+  public getAppBaseUrl(): string {
+    const configuredUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_BASE_URL;
+    if (configuredUrl && configuredUrl.trim().length > 0) {
+      return configuredUrl.trim().replace(/\/$/, '');
+    }
+    const port = process.env.PORT || '3000';
+    return `http://localhost:${port}`;
+  }
+
   /**
    * Creates an order using Orders v2 API
    */
@@ -135,6 +144,8 @@ export class PayPalClient {
     description?: string;
     mockResponseCode?: string; // for negative testing
     requestId?: string;
+    returnUrl?: string;
+    cancelUrl?: string;
     traces?: TraceEvent[];
   }): Promise<{ order: Record<string, unknown>; orderId: string; status: OrderState; traces: TraceEvent[] }> {
     const traces = options.traces || [];
@@ -142,6 +153,9 @@ export class PayPalClient {
 
     const requestId = options.requestId || uuidv4();
     const currency = options.currency || 'USD';
+    const baseUrl = this.getAppBaseUrl();
+    const returnUrl = options.returnUrl || `${baseUrl}/checkout/success`;
+    const cancelUrl = options.cancelUrl || `${baseUrl}/checkout/cancel`;
 
     const orderPayload = {
       intent: 'CAPTURE',
@@ -159,8 +173,8 @@ export class PayPalClient {
         brand_name: 'PayPath Lab Sandbox',
         landing_page: 'NO_PREFERENCE',
         user_action: 'PAY_NOW',
-        return_url: 'https://paypath.local/checkout/success',
-        cancel_url: 'https://paypath.local/checkout/cancel',
+        return_url: returnUrl,
+        cancel_url: cancelUrl,
       },
     };
 
@@ -312,18 +326,28 @@ export class PayPalClient {
       },
     });
 
-    // Check for negative testing decline
+    // Check error details
     const isDeclined =
-      data.details?.some((d: Record<string, unknown>) => d.issue === 'INSTRUMENT_DECLINED') ||
-      data.name === 'UNPROCESSABLE_ENTITY' ||
-      response.status === 422;
+      data.details?.some((d: Record<string, unknown>) => d.issue === 'INSTRUMENT_DECLINED' || d.issue === 'TRANSACTION_REFUSED');
+
+    const isOrderNotApproved =
+      data.details?.some((d: Record<string, unknown>) => d.issue === 'ORDER_NOT_APPROVED') ||
+      data.message?.includes('ORDER_NOT_APPROVED');
 
     const captureId =
       data.purchase_units?.[0]?.payments?.captures?.[0]?.id || undefined;
 
+    const finalStatus: OrderState = isSuccess
+      ? 'COMPLETED'
+      : isDeclined
+      ? 'DECLINED'
+      : isOrderNotApproved
+      ? 'PAYER_ACTION_REQUIRED'
+      : 'FAILED';
+
     return {
       captureData: data,
-      status: isSuccess ? 'COMPLETED' : isDeclined ? 'DECLINED' : 'FAILED',
+      status: finalStatus,
       captureId,
       traces,
     };

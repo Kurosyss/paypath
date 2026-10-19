@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Radio, X, Send, ShieldAlert, CheckCircle2, RotateCw } from 'lucide-react';
+import { Radio, X, Send, RotateCw } from 'lucide-react';
 
 interface WebhookSimulatorModalProps {
   isOpen: boolean;
@@ -40,7 +40,7 @@ export function WebhookSimulatorModal({
         parent_payment: orderId,
         amount: {
           currency_code: 'USD',
-          value: '25.00',
+          value: '10.00',
         },
         status: eventType === 'PAYMENT.CAPTURE.COMPLETED' ? 'COMPLETED' : 'DECLINED',
       },
@@ -73,34 +73,39 @@ export function WebhookSimulatorModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-      <div className="w-full max-w-lg rounded-2xl border border-white/10 bg-slate-900 p-6 shadow-2xl space-y-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+      <div className="w-full max-w-lg rounded-[16px] border border-[var(--border-hairline)] bg-[var(--bg-elevated)] p-6 shadow-floating space-y-4 transition-colors">
         {/* Title */}
-        <div className="flex items-center justify-between border-b border-white/10 pb-3">
+        <div className="flex items-center justify-between border-b border-[var(--border-hairline)] pb-3">
           <div className="flex items-center gap-2">
-            <Radio className="h-5 w-5 text-purple-400" />
-            <h3 className="text-base font-bold text-white">PayPal Webhook Simulator</h3>
+            <Radio className="h-4 w-4 text-[var(--text-mute)]" />
+            <h3 className="text-base font-semibold text-[var(--text-ink)] tracking-[-0.4px]">
+              PayPal Webhook Simulator
+            </h3>
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-1 text-slate-400 hover:bg-slate-800 hover:text-white"
+            className="rounded-[6px] p-1.5 text-[var(--text-mute)] hover:text-[var(--text-ink)] hover:bg-[var(--border-hairline-soft)] transition-colors cursor-pointer"
+            aria-label="Close dialog"
           >
-            <X className="h-5 w-5" />
+            <X className="h-4 w-4" />
           </button>
         </div>
 
-        <p className="text-xs text-slate-400">
-          Dispatch test webhooks to your local receiver to verify idempotency, deduplication, and signature security.
+        <p className="text-xs text-[var(--text-body)] leading-relaxed">
+          Dispatch test webhooks to verify idempotency deduplication and cryptographic signature verification.
         </p>
 
         {/* Form Controls */}
-        <div className="space-y-3 text-xs">
+        <div className="space-y-3.5 text-xs">
           <div>
-            <label className="block text-slate-300 font-medium mb-1">Event Type</label>
+            <label className="block text-[var(--text-body)] font-medium mb-1.5 font-mono text-[11px]">
+              EVENT TYPE
+            </label>
             <select
               value={eventType}
               onChange={(e) => setEventType(e.target.value)}
-              className="w-full rounded-lg border border-white/10 bg-slate-950 px-3 py-2 text-slate-200 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+              className="w-full rounded-[6px] border border-[var(--border-hairline)] bg-[var(--bg-canvas)] px-3 py-2 text-[var(--text-ink)] font-mono text-xs focus:outline-none focus:border-[var(--text-ink)] cursor-pointer"
             >
               <option value="PAYMENT.CAPTURE.COMPLETED">PAYMENT.CAPTURE.COMPLETED</option>
               <option value="CHECKOUT.ORDER.APPROVED">CHECKOUT.ORDER.APPROVED</option>
@@ -111,66 +116,68 @@ export function WebhookSimulatorModal({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-slate-300 font-medium mb-1">Order ID</label>
+              <label className="block text-[var(--text-body)] font-medium mb-1.5 font-mono text-[11px]">
+                ORDER ID
+              </label>
               <input
                 type="text"
                 value={orderId}
                 onChange={(e) => setOrderId(e.target.value)}
-                className="w-full rounded-lg border border-white/10 bg-slate-950 px-3 py-2 text-slate-200 font-mono text-[11px]"
+                className="w-full rounded-[6px] border border-[var(--border-hairline)] bg-[var(--bg-canvas)] px-3 py-2 text-[var(--text-ink)] font-mono text-xs focus:outline-none focus:border-[var(--text-ink)]"
               />
             </div>
             <div>
-              <label className="block text-slate-300 font-medium mb-1">Event ID (Deduplication Key)</label>
+              <label className="block text-[var(--text-body)] font-medium mb-1.5 font-mono text-[11px]">
+                EVENT ID (DEDUP KEY)
+              </label>
               <input
                 type="text"
                 value={eventId}
                 onChange={(e) => setEventId(e.target.value)}
-                className="w-full rounded-lg border border-white/10 bg-slate-950 px-3 py-2 text-slate-200 font-mono text-[11px]"
+                className="w-full rounded-[6px] border border-[var(--border-hairline)] bg-[var(--bg-canvas)] px-3 py-2 text-[var(--text-ink)] font-mono text-xs focus:outline-none focus:border-[var(--text-ink)]"
               />
             </div>
           </div>
 
           {/* Fault Toggles */}
-          <div className="space-y-2 pt-2 border-t border-white/5">
-            <label className="flex items-center gap-2 cursor-pointer">
+          <div className="space-y-2 pt-2 border-t border-[var(--border-hairline)]">
+            <label className="flex items-center gap-2 cursor-pointer text-[var(--text-body)] hover:text-[var(--text-ink)]">
               <input
                 type="checkbox"
                 checked={isDuplicate}
                 onChange={(e) => {
                   setIsDuplicate(e.target.checked);
-                  if (e.target.checked) {
-                    // keep eventId constant to trigger duplicate
-                  } else {
+                  if (!e.target.checked) {
                     setEventId(`WH-EVT-${Date.now()}`);
                   }
                 }}
-                className="rounded border-slate-700 bg-slate-950 text-cyan-500"
+                className="rounded-[4px] border-[var(--border-hairline)] accent-[var(--text-ink)]"
               />
-              <span className="text-slate-300">
+              <span className="text-xs">
                 Test Duplicate Replay (Re-uses identical Event ID)
               </span>
             </label>
 
-            <label className="flex items-center gap-2 cursor-pointer">
+            <label className="flex items-center gap-2 cursor-pointer text-[var(--text-body)] hover:text-[var(--text-ink)]">
               <input
                 type="checkbox"
                 checked={isTamperedSig}
                 onChange={(e) => setIsTamperedSig(e.target.checked)}
-                className="rounded border-slate-700 bg-slate-950 text-rose-500"
+                className="rounded-[4px] border-[var(--border-hairline)] accent-[var(--text-ink)]"
               />
-              <span className="text-rose-300">
+              <span className="text-xs">
                 Simulate Forged / Tampered Cryptographic Signature
               </span>
             </label>
           </div>
         </div>
 
-        {/* Action Button */}
+        {/* Action Button (Pill CTA) */}
         <div className="pt-2">
           <button
             onClick={handleSendWebhook}
             disabled={isSending}
-            className="w-full flex items-center justify-center gap-2 rounded-xl bg-purple-600 px-4 py-2.5 text-xs font-semibold text-white shadow-lg shadow-purple-600/30 transition hover:bg-purple-500 disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-2 rounded-[100px] bg-[var(--text-ink)] text-[var(--bg-canvas)] px-4 h-10 text-xs font-medium hover:opacity-90 disabled:opacity-50 transition-opacity cursor-pointer shadow-whisper"
           >
             {isSending ? (
               <>
@@ -178,7 +185,7 @@ export function WebhookSimulatorModal({
               </>
             ) : (
               <>
-                <Send className="h-4 w-4" /> Dispatch Webhook to Receiver
+                <Send className="h-3.5 w-3.5" /> Dispatch Webhook to Receiver
               </>
             )}
           </button>
@@ -186,9 +193,9 @@ export function WebhookSimulatorModal({
 
         {/* Result Snapshot */}
         {result && (
-          <div className="rounded-lg border border-white/10 bg-slate-950 p-3 text-xs font-mono space-y-1">
-            <span className="text-slate-400 block text-[10px]">RECEIVER RESPONSE:</span>
-            <pre className="text-slate-200 overflow-x-auto max-h-36 custom-scrollbar">
+          <div className="rounded-[8px] border border-[var(--border-hairline)] bg-[var(--bg-canvas)] p-3 text-xs font-mono space-y-1">
+            <span className="text-[var(--text-mute)] block text-[10px]">RECEIVER RESPONSE:</span>
+            <pre className="text-[var(--text-ink)] overflow-x-auto max-h-36 custom-scrollbar">
               {JSON.stringify(result, null, 2)}
             </pre>
           </div>

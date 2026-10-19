@@ -6,13 +6,10 @@ import {
   FlaskConical,
   Clock,
   Sparkles,
+  Cpu,
   History,
   BookOpen,
-  CheckCircle2,
-  AlertTriangle,
-  Play,
-  RotateCcw,
-  Zap,
+  ArrowRight,
 } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { OverviewSection } from '@/components/OverviewSection';
@@ -22,6 +19,7 @@ import { DiagnosticReport } from '@/components/DiagnosticReport';
 import { RegressionViewer } from '@/components/RegressionViewer';
 import { WebhookSimulatorModal } from '@/components/WebhookSimulatorModal';
 import { SettingsModal } from '@/components/SettingsModal';
+import { AuthoritativePaymentCard } from '@/components/AuthoritativePaymentCard';
 import {
   ScenarioDefinition,
   ScenarioId,
@@ -79,6 +77,9 @@ export default function PayPathDashboard() {
         setRuns(data.runs);
         if (data.runs.length > 0 && !activeRun) {
           setActiveRun(data.runs[0]);
+          setSelectedScenarioId(data.runs[0].scenarioId);
+          setSelectedMode(data.runs[0].mode);
+          setApplyFix(data.runs[0].appliedFix);
         }
       }
     } catch (e) {
@@ -110,22 +111,26 @@ export default function PayPathDashboard() {
         }),
       });
       const data = await res.json();
-      setActiveRun(data);
-      setRuns((prev) => [data, ...prev.filter((r) => r.runId !== data.runId)]);
-      // Auto-switch to timeline or diagnostics if failed
-      if (data.status === 'FAILED') {
-        setActiveTab('diagnostics');
+      const record = data.runRecord || (data.runId ? data : null);
+      if (record) {
+        setActiveRun(record);
+        setSelectedScenarioId(scenarioId);
+        setSelectedMode(mode);
+        setApplyFix(withFix);
+        setRuns((prev) => [record, ...prev]);
+        if (record.status === 'FAILED') {
+          setActiveTab('diagnostics');
+        }
       }
-    } catch (err) {
-      console.error('Failed to run scenario:', err);
+    } catch (e) {
+      console.error('Failed to run scenario:', e);
     } finally {
       setIsRunning(false);
     }
   };
 
-  // Run full suite sequentially
+  // Run full regression suite
   const handleRunAllScenarios = async () => {
-    if (scenarios.length === 0) return;
     setIsRunningSuite(true);
     for (const sc of scenarios) {
       await handleRunScenario(sc.id, selectedMode, applyFix);
@@ -161,8 +166,8 @@ export default function PayPathDashboard() {
   const passCount = runs.filter((r) => r.status === 'PASSED').length;
 
   return (
-    <div className="min-h-screen bg-[#070A0F] text-slate-100 flex flex-col font-sans selection:bg-cyan-500/30 selection:text-cyan-200">
-      {/* Navbar */}
+    <div className="min-h-screen bg-[var(--bg-canvas)] text-[var(--text-ink)] flex flex-col font-sans transition-colors duration-150">
+      {/* Navbar (Vercel Geist nav-bar) */}
       <Navbar
         paypalConfig={paypalConfig}
         aiConfig={aiConfig}
@@ -175,16 +180,65 @@ export default function PayPathDashboard() {
         isRunningSuite={isRunningSuite}
       />
 
-      {/* Main Container */}
+      {/* Hero Band (Strict monochrome, tight display typography) */}
+      <section className="relative overflow-hidden border-b border-[var(--border-hairline)] bg-[var(--bg-canvas)] py-10 sm:py-14 transition-colors">
+        <div className="absolute inset-0 hero-mesh pointer-events-none" />
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="max-w-3xl space-y-3.5">
+            <div className="inline-flex items-center gap-2 rounded-[64px] border border-[var(--border-hairline)] bg-[var(--bg-elevated)] px-3 py-1 shadow-whisper">
+              <span className="h-1.5 w-1.5 rounded-full bg-[var(--text-ink)]" />
+              <span className="font-mono text-xs uppercase tracking-wider text-[var(--text-body)] font-medium">
+                PayPal AI Hackathon 2026 &middot; Payment Reliability Lab
+              </span>
+            </div>
+
+            <h1 className="font-display-xl text-3xl sm:text-5xl text-[var(--text-ink)] tracking-[-2.4px] leading-tight">
+              Test real PayPal flows.<br />
+              {aiConfig?.available
+                ? 'Expose failure weaknesses with AI.'
+                : 'Expose failure weaknesses with Automated Invariants.'}
+            </h1>
+
+            <p className="text-sm sm:text-base text-[var(--text-body)] leading-relaxed max-w-2xl">
+              PayPath combines chaotic payment fault injection, 10 formal safety invariants, recursive trace sanitization, and {aiConfig?.available ? 'Google Gemini AI diagnostics' : 'deterministic diagnostic rule engine'} to harden PayPal checkouts before production.
+            </p>
+
+            <div className="flex flex-wrap items-center gap-3 pt-2">
+              <button
+                onClick={() => {
+                  setSelectedScenarioId('scenario-a-success');
+                  setActiveTab('lab');
+                }}
+                className="inline-flex items-center gap-2 rounded-[100px] bg-[var(--text-ink)] text-[var(--bg-canvas)] px-5 h-10 font-medium text-sm hover:opacity-90 transition-opacity cursor-pointer shadow-whisper"
+              >
+                <span>Launch Scenario Lab</span>
+                <ArrowRight className="h-4 w-4" />
+              </button>
+
+              <button
+                onClick={() => setActiveTab('overview')}
+                className="inline-flex items-center gap-2 rounded-[100px] border border-[var(--border-hairline)] bg-[var(--bg-elevated)] text-[var(--text-ink)] px-5 h-10 font-medium text-sm hover:border-[var(--text-mute)] transition-colors cursor-pointer shadow-whisper"
+              >
+                <span>Inspect Invariant Matrix</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Main Interactive Container */}
       <main className="flex-1 mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        {/* Navigation Tabs */}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-3">
-          <nav className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar">
+        {/* Compact Authoritative Payment Confirmation Card */}
+        <AuthoritativePaymentCard />
+
+        {/* Navigation Tabs (Vercel Geist tab chrome) */}
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border-hairline)] pb-2.5">
+          <nav className="flex items-center gap-1 overflow-x-auto custom-scrollbar">
             {[
               { id: 'lab', label: 'Scenario Lab', icon: FlaskConical },
               { id: 'overview', label: 'Overview Matrix', icon: ShieldCheck },
               { id: 'timeline', label: 'Trace Timeline', icon: Clock, badge: activeRun?.traces.length },
-              { id: 'diagnostics', label: 'AI Diagnostic Studio', icon: Sparkles, highlight: activeRun?.status === 'FAILED' },
+              { id: 'diagnostics', label: aiConfig?.available ? 'AI Diagnostic Studio' : 'Diagnostic Studio', icon: Cpu },
               { id: 'regression', label: 'Regression Suite', icon: History, count: runs.length },
               { id: 'docs', label: 'Integration Docs', icon: BookOpen },
             ].map((tab) => {
@@ -194,39 +248,30 @@ export default function PayPathDashboard() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                  className={`flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-semibold transition ${
+                  className={`flex items-center gap-2 rounded-[6px] px-3 py-1.5 text-xs font-medium transition cursor-pointer ${
                     isActive
-                      ? 'bg-cyan-500/15 text-cyan-400 border border-cyan-500/40 shadow-sm'
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
+                      ? 'bg-[var(--text-ink)] text-[var(--bg-canvas)] shadow-whisper font-semibold'
+                      : 'text-[var(--text-body)] hover:text-[var(--text-ink)] hover:bg-[var(--border-hairline-soft)]'
                   }`}
                 >
-                  <Icon className={`h-4 w-4 ${tab.highlight ? 'text-rose-400 animate-pulse' : ''}`} />
+                  <Icon className="h-3.5 w-3.5" />
                   <span>{tab.label}</span>
                   {tab.badge !== undefined && tab.badge > 0 && (
-                    <span className="rounded-full bg-slate-800 px-1.5 py-0.2 text-[10px] font-mono text-slate-300">
+                    <span className="rounded-[4px] bg-[var(--border-hairline-soft)] border border-[var(--border-hairline)] px-1.5 py-0.2 text-[10px] font-mono text-[var(--text-body)]">
                       {tab.badge}
                     </span>
-                  )}
-                  {tab.highlight && (
-                    <span className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-ping" />
                   )}
                 </button>
               );
             })}
           </nav>
 
-          {/* Quick Status Pill */}
+          {/* Quick Active Run Pill */}
           {activeRun && (
-            <div className="hidden sm:flex items-center gap-2 text-xs font-mono text-slate-400 bg-slate-900 px-3 py-1.5 rounded-lg border border-white/5">
-              <span>Active Run:</span>
-              <span className="text-cyan-400 font-bold">{activeRun.scenarioTitle}</span>
-              <span
-                className={`px-1.5 rounded font-bold text-[10px] ${
-                  activeRun.status === 'PASSED'
-                    ? 'bg-emerald-950 text-emerald-300'
-                    : 'bg-rose-950 text-rose-300'
-                }`}
-              >
+            <div className="hidden sm:flex items-center gap-2 text-xs font-mono text-[var(--text-body)] bg-[var(--bg-elevated)] px-3 py-1 rounded-[6px] border border-[var(--border-hairline)] shadow-whisper">
+              <span className="text-[var(--text-mute)]">Active:</span>
+              <span className="font-semibold text-[var(--text-ink)]">{activeRun.scenarioTitle}</span>
+              <span className="px-1.5 py-0.2 rounded-[4px] font-semibold text-[10px] border border-[var(--border-hairline)] bg-[var(--bg-canvas)] text-[var(--text-ink)]">
                 {activeRun.status}
               </span>
             </div>
@@ -238,7 +283,11 @@ export default function PayPathDashboard() {
           <ScenarioLab
             scenarios={scenarios}
             selectedScenarioId={selectedScenarioId}
-            onSelectScenario={(id) => setSelectedScenarioId(id)}
+            onSelectScenario={(id) => {
+              setSelectedScenarioId(id);
+              const found = scenarios.find((s) => s.id === id);
+              if (found) setSelectedMode(found.defaultMode);
+            }}
             onRunScenario={handleRunScenario}
             activeRun={activeRun}
             isRunning={isRunning}
@@ -272,87 +321,97 @@ export default function PayPathDashboard() {
             selectedRunId={activeRun?.runId}
             onSelectRun={(r) => {
               setActiveRun(r);
+              setSelectedScenarioId(r.scenarioId);
               setActiveTab('diagnostics');
             }}
           />
         )}
 
         {activeTab === 'docs' && (
-          <div className="rounded-xl border border-white/10 bg-slate-900/60 p-6 backdrop-blur-md space-y-6 text-xs text-slate-300 leading-relaxed">
-            <div className="border-b border-white/10 pb-4">
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                <BookOpen className="h-5 w-5 text-cyan-400" />
-                PayPal Payment Reliability Lab — Integration Architecture
+          <div className="rounded-[12px] border border-[var(--border-hairline)] bg-[var(--bg-elevated)] p-6 sm:p-8 shadow-whisper space-y-6 text-xs text-[var(--text-body)] leading-relaxed transition-colors">
+            <div className="border-b border-[var(--border-hairline)] pb-4">
+              <h3 className="text-xl font-semibold text-[var(--text-ink)] tracking-[-0.4px] flex items-center gap-2">
+                <BookOpen className="h-5 w-5 text-[var(--text-mute)]" />
+                PayPal Payment Reliability Lab &middot; Architecture Specification
               </h3>
-              <p className="text-slate-400 mt-1">
-                Engineering guidelines for building fault-tolerant PayPal checkout and webhook processing.
+              <p className="text-[var(--text-mute)] mt-1">
+                Formal engineering patterns for building resilient, zero-defect PayPal checkout integrations.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <div className="rounded-lg bg-slate-950 p-4 border border-white/5 space-y-2">
-                  <h4 className="font-semibold text-cyan-300 text-sm">1. Idempotency with PayPal-Request-Id</h4>
-                  <p>
-                    All mutating requests (order creation and capture) must include a unique, deterministic <code className="text-cyan-400 font-mono">PayPal-Request-Id</code> HTTP header.
-                    If a network timeout occurs and your server re-sends the request, PayPal detects the idempotency key and prevents duplicate charges.
-                  </p>
-                </div>
-
-                <div className="rounded-lg bg-slate-950 p-4 border border-white/5 space-y-2">
-                  <h4 className="font-semibold text-cyan-300 text-sm">2. Authoritative State Reconciliation</h4>
-                  <p>
-                    Never retry a timed-out <code className="text-cyan-400 font-mono">/capture</code> call blindly. Always execute <code className="text-cyan-400 font-mono">GET /v2/checkout/orders/&#123;id&#125;</code> first.
-                    If the PayPal ledger indicates the order is already <code className="text-emerald-400 font-mono">COMPLETED</code>, fulfill the order without calling capture again.
-                  </p>
-                </div>
-
-                <div className="rounded-lg bg-slate-950 p-4 border border-white/5 space-y-2">
-                  <h4 className="font-semibold text-cyan-300 text-sm">3. Webhook Deduplication</h4>
-                  <p>
-                    PayPal webhooks guarantee at-least-once delivery. Network retries can dispatch duplicate <code className="text-cyan-400 font-mono">PAYMENT.CAPTURE.COMPLETED</code> events.
-                    Store every <code className="text-cyan-400 font-mono">event_id</code> in an atomic key store (Redis or unique DB constraint) and immediately acknowledge duplicates with HTTP 200 without double fulfillment.
-                  </p>
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+              <div className="space-y-2 border-t border-[var(--border-hairline)] pt-4 first:border-t-0 first:pt-0">
+                <h4 className="font-semibold text-[var(--text-ink)] text-sm tracking-[-0.2px]">
+                  1. Idempotency with PayPal-Request-Id
+                </h4>
+                <p>
+                  All mutating requests (order creation and capture) must include a unique, deterministic <code className="font-mono text-[11px] text-[var(--text-ink)] bg-[var(--bg-canvas)] px-1 py-0.5 rounded border border-[var(--border-hairline)]">PayPal-Request-Id</code> HTTP header.
+                  If network packet loss causes a client timeout, re-sending with the identical idempotency key prevents duplicate charges.
+                </p>
               </div>
 
-              <div className="space-y-4">
-                <div className="rounded-lg bg-slate-950 p-4 border border-white/5 space-y-2">
-                  <h4 className="font-semibold text-cyan-300 text-sm">4. Cryptographic Signature Verification</h4>
-                  <p>
-                    Never trust raw webhook payloads. Verify headers using PayPal&apos;s <code className="text-cyan-400 font-mono">/v1/notifications/verify-webhook-signature</code> API or asymmetric RSA-SHA256 cert verification before updating order status.
-                  </p>
-                </div>
+              <div className="space-y-2 border-t border-[var(--border-hairline)] pt-4 md:border-t-0 md:pt-0">
+                <h4 className="font-semibold text-[var(--text-ink)] text-sm tracking-[-0.2px]">
+                  2. Authoritative State Reconciliation
+                </h4>
+                <p>
+                  Never blindly retry a timed-out <code className="font-mono text-[11px] text-[var(--text-ink)] bg-[var(--bg-canvas)] px-1 py-0.5 rounded border border-[var(--border-hairline)]">/capture</code> call. Always execute <code className="font-mono text-[11px] text-[var(--text-ink)] bg-[var(--bg-canvas)] px-1 py-0.5 rounded border border-[var(--border-hairline)]">GET /v2/checkout/orders/{'{id}'}</code> first.
+                  If the PayPal ledger indicates the order is already <code className="font-mono text-[11px] text-[var(--text-ink)] bg-[var(--bg-canvas)] px-1 py-0.5 rounded border border-[var(--border-hairline)]">COMPLETED</code>, fulfill without duplicate capture.
+                </p>
+              </div>
 
-                <div className="rounded-lg bg-slate-950 p-4 border border-white/5 space-y-2">
-                  <h4 className="font-semibold text-cyan-300 text-sm">5. Monotonic State Progression</h4>
-                  <p>
-                    Terminal payment states (<code className="text-emerald-400 font-mono">COMPLETED</code>, <code className="text-rose-400 font-mono">VOIDED</code>) must never be reverted by late-arriving asynchronous webhooks (e.g. late <code className="text-cyan-400 font-mono">CHECKOUT.ORDER.APPROVED</code>).
-                  </p>
-                </div>
+              <div className="space-y-2 border-t border-[var(--border-hairline)] pt-4">
+                <h4 className="font-semibold text-[var(--text-ink)] text-sm tracking-[-0.2px]">
+                  3. Webhook Deduplication
+                </h4>
+                <p>
+                  PayPal webhooks guarantee at-least-once delivery. Network retries can dispatch duplicate events.
+                  Store every <code className="font-mono text-[11px] text-[var(--text-ink)] bg-[var(--bg-canvas)] px-1 py-0.5 rounded border border-[var(--border-hairline)]">event_id</code> in an atomic key store and acknowledge duplicates with HTTP 200 without double fulfillment.
+                </p>
+              </div>
 
-                <div className="rounded-lg bg-slate-950 p-4 border border-white/5 space-y-2">
-                  <h4 className="font-semibold text-cyan-300 text-sm">6. Zero Credential Leakage</h4>
-                  <p>
-                    Sanitize all debug payloads. Never allow client secrets, OAuth bearer tokens, or card credentials to enter application log streams, traces, or LLM prompts.
-                  </p>
-                </div>
+              <div className="space-y-2 border-t border-[var(--border-hairline)] pt-4">
+                <h4 className="font-semibold text-[var(--text-ink)] text-sm tracking-[-0.2px]">
+                  4. Cryptographic Signature Verification
+                </h4>
+                <p>
+                  Never trust raw webhook payloads. Verify headers using PayPal&apos;s official <code className="font-mono text-[11px] text-[var(--text-ink)] bg-[var(--bg-canvas)] px-1 py-0.5 rounded border border-[var(--border-hairline)]">/v1/notifications/verify-webhook-signature</code> API or asymmetric RSA-SHA256 cert verification before updating ledger state.
+                </p>
+              </div>
+
+              <div className="space-y-2 border-t border-[var(--border-hairline)] pt-4">
+                <h4 className="font-semibold text-[var(--text-ink)] text-sm tracking-[-0.2px]">
+                  5. Monotonic State Progression
+                </h4>
+                <p>
+                  Terminal payment states (<code className="font-mono text-[11px] text-[var(--text-ink)] bg-[var(--bg-canvas)] px-1 py-0.5 rounded border border-[var(--border-hairline)]">COMPLETED</code>, <code className="font-mono text-[11px] text-[var(--text-ink)] bg-[var(--bg-canvas)] px-1 py-0.5 rounded border border-[var(--border-hairline)]">VOIDED</code>) must never be reverted by late-arriving asynchronous webhooks.
+                </p>
+              </div>
+
+              <div className="space-y-2 border-t border-[var(--border-hairline)] pt-4">
+                <h4 className="font-semibold text-[var(--text-ink)] text-sm tracking-[-0.2px]">
+                  6. Zero Credential Leakage
+                </h4>
+                <p>
+                  Sanitize all debug payloads. Never allow client secrets, OAuth bearer tokens, or card credentials to enter application log streams, browser traces, or LLM prompts.
+                </p>
               </div>
             </div>
           </div>
         )}
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-white/10 bg-slate-950/80 py-4 text-center text-xs text-slate-500">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+      {/* Footer (Vercel footer from DESIGN.md) */}
+      <footer className="border-t border-[var(--border-hairline)] bg-[var(--bg-canvas)] py-6 text-xs text-[var(--text-mute)] transition-colors">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className="font-bold text-slate-300">PayPath</span>
-            <span>· PayPal AI Hackathon 2026 Submission</span>
+            <span className="font-semibold text-[var(--text-ink)]">PayPath</span>
+            <span>&middot; PayPal AI Hackathon 2026 Submission</span>
           </div>
-          <div className="flex items-center gap-4 text-[11px]">
-            <span>MIT Licensed</span>
-            <span>· Built with Next.js, TypeScript, PayPal Orders v2 & Gemini AI</span>
+          <div className="flex items-center gap-4 text-[11px] font-mono">
+            <span>Next.js 16 App Router</span>
+            <span>&middot; PayPal Orders v2 REST</span>
+            <span>&middot; {aiConfig?.available ? 'Gemini 2.5 Flash' : 'Deterministic Rule Engine'}</span>
           </div>
         </div>
       </footer>

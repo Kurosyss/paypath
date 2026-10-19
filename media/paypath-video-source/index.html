@@ -1,0 +1,563 @@
+<!doctype html>
+<html lang="en" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>PayPath Product Launch Video — Verified Final Candidate</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      @font-face {
+        font-family: 'Inter';
+        src: local('Inter'), local('Segoe UI'), local('Arial');
+      }
+      @font-face {
+        font-family: 'SFMono-Regular';
+        src: local('Consolas'), local('Courier New'), monospace;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html, body {
+        margin: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #000000;
+        color: #ededed;
+        font-family: 'Inter', sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      #root {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #000000;
+      }
+
+      /* Base Scene Clip */
+      .clip {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+      }
+
+      /* Subtle engineering background grid */
+      .bg-grid {
+        position: absolute;
+        inset: 0;
+        background-size: 64px 64px;
+        background-image: 
+          linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+        pointer-events: none;
+      }
+
+      /* Ambient radial backdrop glow */
+      .bg-ambient {
+        position: absolute;
+        width: 1400px;
+        height: 1400px;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.045) 0%, rgba(0,0,0,0) 65%);
+        pointer-events: none;
+      }
+
+      /* Common Window Frame for Product Screens */
+      .window-frame {
+        position: absolute;
+        width: 1560px;
+        height: 880px;
+        left: 180px;
+        top: 100px;
+        background: #0d0d0d;
+        border: 1px solid #262626;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 32px 80px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(255, 255, 255, 0.08);
+      }
+      .window-header {
+        height: 44px;
+        background: #111111;
+        border-bottom: 1px solid #222222;
+        display: flex;
+        align-items: center;
+        padding: 0 18px;
+        gap: 16px;
+      }
+      .window-dots {
+        display: flex;
+        gap: 8px;
+      }
+      .window-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #262626;
+        border: 1px solid #333333;
+      }
+      .window-dot.active {
+        background: #525252;
+      }
+      .window-url {
+        flex: 1;
+        max-width: 480px;
+        height: 26px;
+        background: #060606;
+        border: 1px solid #222222;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        padding: 0 12px;
+        font-family: 'SFMono-Regular', monospace;
+        font-size: 11px;
+        color: #888888;
+        letter-spacing: -0.01em;
+      }
+      .window-status-pill {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 3px 10px;
+        background: #060606;
+        border: 1px solid #222222;
+        border-radius: 4px;
+        font-family: 'SFMono-Regular', monospace;
+        font-size: 10px;
+        color: #888888;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .window-status-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #ededed;
+      }
+      .window-content {
+        position: relative;
+        width: 100%;
+        height: calc(100% - 44px);
+        background: #060606;
+        overflow: hidden;
+      }
+      .window-viewport {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
+      .window-screen {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      /* Callout Badge floating above window */
+      .callout-badge {
+        position: absolute;
+        bottom: 40px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 10px 24px;
+        background: rgba(13, 13, 13, 0.94);
+        border: 1px solid #333333;
+        border-radius: 100px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(12px);
+        white-space: nowrap;
+        z-index: 50;
+      }
+      .callout-badge .badge-icon {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #ededed;
+      }
+      .callout-badge.alert .badge-icon {
+        background: #ffffff;
+        box-shadow: 0 0 8px rgba(255, 255, 255, 0.7);
+      }
+      .callout-badge .badge-text {
+        font-family: 'SFMono-Regular', monospace;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #ededed;
+      }
+
+      /* Refined Focus Inspection Framing - Non-competing 1px architectural hairline */
+      .focus-box {
+        position: absolute;
+        border: 1px solid rgba(255, 255, 255, 0.55);
+        border-radius: 6px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(0, 0, 0, 0.3);
+        pointer-events: none;
+        z-index: 40;
+      }
+      .focus-tag {
+        position: absolute;
+        top: -11px;
+        left: 14px;
+        padding: 2px 8px;
+        background: #111111;
+        color: #ededed;
+        border: 1px solid rgba(255, 255, 255, 0.28);
+        font-family: 'SFMono-Regular', monospace;
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        border-radius: 4px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(8px);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Hyperframes Root Element -->
+    <div
+      id="root"
+      data-composition-id="paypath-launch"
+      data-width="1920"
+      data-height="1080"
+      data-duration="23.0"
+    >
+      <!-- Audio Tracks -->
+      <audio
+        id="bg-music"
+        src="assets/music/happy-beats-business-moves-vol-12-by-ende-dot-app.mp3"
+        data-start="0"
+        data-duration="23.0"
+        data-volume="1"
+      ></audio>
+
+      <audio id="sfx-hook" src="assets/sfx/impact/impactSoft_medium_001.ogg" data-start="0.1" data-volume="0.6"></audio>
+      <audio id="sfx-reveal" src="assets/sfx/ui/click1.ogg" data-start="3.8" data-volume="0.5"></audio>
+      <audio id="sfx-switch" src="assets/sfx/interface/switch_001.ogg" data-start="7.8" data-volume="0.5"></audio>
+      <audio id="sfx-alert" src="assets/sfx/interface/bong_001.ogg" data-start="11.8" data-volume="0.65"></audio>
+      <audio id="sfx-code" src="assets/sfx/ui/mouseclick1.ogg" data-start="15.6" data-volume="0.55"></audio>
+      <audio id="sfx-outro" src="assets/sfx/impact/impactBell_heavy_000.ogg" data-start="19.4" data-volume="0.7"></audio>
+
+      <!-- Global Engineering Backdrop -->
+      <div class="bg-grid"></div>
+      <div class="bg-ambient"></div>
+
+      <!-- ================================================================= -->
+      <!-- SCENE 1: THE PROBLEM HOOK (0.0s - 3.8s)                           -->
+      <!-- ================================================================= -->
+      <div id="scene-1-hook" class="clip" data-track-index="1" data-start="0.0" data-duration="3.8">
+        <div id="hook-container" style="position: relative; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 0 80px;">
+          
+          <!-- Category Eyebrow Pill -->
+          <div id="hook-eyebrow" style="display: inline-flex; align-items: center; gap: 8px; padding: 6px 18px; border-radius: 100px; border: 1px solid #333333; background: #0d0d0d; margin-bottom: 28px; box-shadow: 0 4px 20px rgba(0,0,0,0.5);">
+            <div style="width: 6px; height: 6px; border-radius: 50%; background: #ededed;"></div>
+            <span style="font-family: 'SFMono-Regular', monospace; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; color: #888888;">
+              PayPal AI Hackathon 2026 &middot; Payment Reliability Lab
+            </span>
+          </div>
+
+          <!-- Main Bold Punchy Hook -->
+          <h1 id="hook-title-1" style="font-size: 68px; font-weight: 700; line-height: 1.08; letter-spacing: -3.2px; color: #ededed; margin-bottom: 14px;">
+            Happy-path checkouts work.
+          </h1>
+          <h2 id="hook-title-2" style="font-size: 68px; font-weight: 700; line-height: 1.08; letter-spacing: -3.2px; color: #888888; margin-bottom: 38px;">
+            Until production chaos strikes.
+          </h2>
+
+          <!-- Chaos Edge-Cases List -->
+          <div id="hook-pills" style="display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; max-width: 1200px;">
+            <div class="hook-pill" style="padding: 10px 20px; border-radius: 8px; border: 1px solid #262626; background: #0c0c0c; display: flex; align-items: center; gap: 10px;">
+              <span style="color: #a3a3a3; font-family: 'SFMono-Regular', monospace; font-size: 11px;">01</span>
+              <span style="font-size: 14px; font-weight: 500; color: #ededed;">504 Timeouts & Blind Double Debits</span>
+            </div>
+            <div class="hook-pill" style="padding: 10px 20px; border-radius: 8px; border: 1px solid #262626; background: #0c0c0c; display: flex; align-items: center; gap: 10px;">
+              <span style="color: #a3a3a3; font-family: 'SFMono-Regular', monospace; font-size: 11px;">02</span>
+              <span style="font-size: 14px; font-weight: 500; color: #ededed;">Swallowed Card Declines</span>
+            </div>
+            <div class="hook-pill" style="padding: 10px 20px; border-radius: 8px; border: 1px solid #262626; background: #0c0c0c; display: flex; align-items: center; gap: 10px;">
+              <span style="color: #a3a3a3; font-family: 'SFMono-Regular', monospace; font-size: 11px;">03</span>
+              <span style="font-size: 14px; font-weight: 500; color: #ededed;">Duplicate Webhook Replays</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================================================================= -->
+      <!-- SCENE 2: DASHBOARD & AUTHORITATIVE SETTLEMENT (3.8s - 7.8s)       -->
+      <!-- ================================================================= -->
+      <div id="scene-2-dashboard" class="clip" data-track-index="2" data-start="3.8" data-duration="4.0">
+        <div id="scene2-container" style="position: relative; width: 100%; height: 100%;">
+          
+          <!-- Browser Window Frame -->
+          <div id="scene2-window" class="window-frame">
+            <div class="window-header">
+              <div class="window-dots">
+                <div class="window-dot active"></div>
+                <div class="window-dot"></div>
+                <div class="window-dot"></div>
+              </div>
+              <div class="window-url">http://localhost:3000 &mdash; PayPath Reliability Lab</div>
+              <div class="window-status-pill">
+                <div class="window-status-dot"></div>
+                <span>PayPal Sandbox Connected</span>
+              </div>
+            </div>
+            <div class="window-content">
+              <div id="scene2-viewport" class="window-viewport" data-layout-allow-overflow>
+                <img id="scene2-screen" class="window-screen" data-layout-allow-overflow src="assets/screens/01-dashboard.png" alt="PayPath Dashboard" />
+                
+                <!-- Refined Focus Box over Persisted Authoritative Payment Card -->
+                <div id="scene2-focus" class="focus-box" style="top: 350px; left: 180px; width: 1200px; height: 58px;">
+                  <div class="focus-tag">Verified Authoritative Settlement &middot; $10.00 USD</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Floating Callout Badge -->
+          <div id="scene2-badge" class="callout-badge">
+            <div class="badge-icon"></div>
+            <span class="badge-text">Authoritative State Progression &middot; PayPal Orders v2 REST</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================================================================= -->
+      <!-- SCENE 3: SCENARIO LAB & CHAOS TESTING CONTROLS (7.8s - 11.8s)     -->
+      <!-- ================================================================= -->
+      <div id="scene-3-scenariolab" class="clip" data-track-index="3" data-start="7.8" data-duration="4.0">
+        <div id="scene3-container" style="position: relative; width: 100%; height: 100%;">
+          
+          <div id="scene3-window" class="window-frame">
+            <div class="window-header">
+              <div class="window-dots">
+                <div class="window-dot active"></div>
+                <div class="window-dot"></div>
+                <div class="window-dot"></div>
+              </div>
+              <div class="window-url">http://localhost:3000 &mdash; Scenario Lab</div>
+              <div class="window-status-pill">
+                <div class="window-status-dot"></div>
+                <span>Execution Mode: Fault Injection</span>
+              </div>
+            </div>
+            <div class="window-content">
+              <div id="scene3-viewport" class="window-viewport" data-layout-allow-overflow>
+                <img id="scene3-screen" class="window-screen" data-layout-allow-overflow src="assets/screens/02-scenario-lab.png" alt="Scenario Lab Controls" />
+
+                <!-- Refined Focus Box over Scenario C Controls Panel -->
+                <div id="scene3-focus" class="focus-box" style="top: 352px; left: 705px; width: 560px; height: 156px;">
+                  <div class="focus-tag">Fault Injection &middot; Unfixed Baseline State</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="scene3-badge" class="callout-badge">
+            <div class="badge-icon"></div>
+            <span class="badge-text">Scenario Lab &middot; Injected 504 Timeout &amp; Chaos Controls</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================================================================= -->
+      <!-- SCENE 4: FAILURE DETECTION & INVARIANT INV-002 (11.8s - 15.6s)   -->
+      <!-- ================================================================= -->
+      <div id="scene-4-failure" class="clip" data-track-index="4" data-start="11.8" data-duration="3.8">
+        <div id="scene4-container" style="position: relative; width: 100%; height: 100%;">
+          
+          <div id="scene4-window" class="window-frame">
+            <div class="window-header">
+              <div class="window-dots">
+                <div class="window-dot active"></div>
+                <div class="window-dot"></div>
+                <div class="window-dot"></div>
+              </div>
+              <div class="window-url">http://localhost:3000 &mdash; Diagnostic Analysis &amp; Invariant Violations</div>
+              <div class="window-status-pill" style="border-color: #555555;">
+                <div class="window-status-dot" style="background: #ffffff;"></div>
+                <span style="color: #ededed;">Outcome: FAILED</span>
+              </div>
+            </div>
+            <div class="window-content">
+              <div id="scene4-viewport" class="window-viewport" data-layout-allow-overflow>
+                <img id="scene4-screen" class="window-screen" data-layout-allow-overflow src="assets/screens/03-failure-detection.png" alt="Invariant Violation" />
+
+                <!-- Refined Focus Box over Invariant Violation Card -->
+                <div id="scene4-focus" class="focus-box" style="top: 320px; left: 178px; width: 1204px; height: 76px;">
+                  <div class="focus-tag">Deterministic Invariant INV-002 Violated &middot; Critical Severity</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="scene4-badge" class="callout-badge alert">
+            <div class="badge-icon"></div>
+            <span class="badge-text">Deterministic Invariants Catch Blind Secondary Capture &amp; Double Debits</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================================================================= -->
+      <!-- SCENE 5: DIAGNOSTIC ENGINE & PROPOSED CODE DIFF (15.6s - 19.4s)   -->
+      <!-- ================================================================= -->
+      <div id="scene-5-diagnostics" class="clip" data-track-index="5" data-start="15.6" data-duration="3.8">
+        <div id="scene5-container" style="position: relative; width: 100%; height: 100%;">
+          
+          <div id="scene5-window" class="window-frame">
+            <div class="window-header">
+              <div class="window-dots">
+                <div class="window-dot active"></div>
+                <div class="window-dot"></div>
+                <div class="window-dot"></div>
+              </div>
+              <div class="window-url">http://localhost:3000 &mdash; Diagnostic Studio &middot; Proposed Code Diff</div>
+              <div class="window-status-pill">
+                <div class="window-status-dot"></div>
+                <span>Diagnostic Engine &middot; Safe State Reconciliation</span>
+              </div>
+            </div>
+            <div class="window-content">
+              <div id="scene5-viewport" class="window-viewport" data-layout-allow-overflow>
+                <img id="scene5-screen" class="window-screen" data-layout-allow-overflow src="assets/screens/04-ai-diagnostics.png" alt="Recommended Code Fix Diff" />
+
+                <!-- Refined Focus Box around Git Diff -->
+                <div id="scene5-focus" class="focus-box" style="top: 405px; left: 156px; width: 1248px; height: 355px;">
+                  <div class="focus-tag">Drop-In Resilient Patch &middot; Safe State Reconciliation</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="scene5-badge" class="callout-badge">
+            <div class="badge-icon"></div>
+            <span class="badge-text">Diagnostic Engine &middot; Generates Resilient Diffs &amp; Automated Regression Tests</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================================================================= -->
+      <!-- SCENE 6: BRANDED OUTRO & CALL TO ACTION (19.4s - 23.0s)           -->
+      <!-- ================================================================= -->
+      <div id="scene-6-outro" class="clip" data-track-index="6" data-start="19.4" data-duration="3.6">
+        <div id="outro-container" style="position: relative; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 0 80px;">
+          
+          <!-- Geometric Brand Mark -->
+          <div id="outro-mark" style="width: 72px; height: 72px; border-radius: 16px; background: #111111; border: 1px solid #333333; display: flex; align-items: center; justify-content: center; margin-bottom: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.08);">
+            <svg width="40" height="40" viewBox="0 0 48 48" fill="none">
+              <path d="M14 8H26C32.6274 8 38 13.3726 38 20C38 26.6274 32.6274 32 26 32H20V40H14V8Z" fill="#EDEDED" />
+              <path d="M20 14H26C29.3137 14 32 16.6863 32 20C32 23.3137 29.3137 26 26 26H20V14Z" fill="#111111" />
+            </svg>
+          </div>
+
+          <!-- Brand Title & Tagline -->
+          <h1 id="outro-title" style="font-size: 56px; font-weight: 700; letter-spacing: -2.4px; color: #ededed; margin-bottom: 12px;">
+            PayPath
+          </h1>
+          <h2 id="outro-sub" style="font-size: 22px; font-weight: 500; letter-spacing: -0.4px; color: #888888; margin-bottom: 34px; max-width: 760px; line-height: 1.4;">
+            Harden your PayPal integration before going to production.
+          </h2>
+
+          <!-- Capability Badges -->
+          <div id="outro-badges" style="display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap;">
+            <div style="padding: 8px 18px; border-radius: 100px; border: 1px solid #262626; background: #0c0c0c; font-family: 'SFMono-Regular', monospace; font-size: 12px; color: #ededed;">
+              PayPal Orders v2 REST
+            </div>
+            <div style="padding: 8px 18px; border-radius: 100px; border: 1px solid #262626; background: #0c0c0c; font-family: 'SFMono-Regular', monospace; font-size: 12px; color: #ededed;">
+              10 Safety Invariants
+            </div>
+            <div style="padding: 8px 18px; border-radius: 100px; border: 1px solid #262626; background: #0c0c0c; font-family: 'SFMono-Regular', monospace; font-size: 12px; color: #ededed;">
+              Diagnostic Rule Engine
+            </div>
+            <div style="padding: 8px 18px; border-radius: 100px; border: 1px solid #262626; background: #0c0c0c; font-family: 'SFMono-Regular', monospace; font-size: 12px; color: #ededed;">
+              MIT Open Source
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- GSAP Animation Driver -->
+    <script>
+      const tl = gsap.timeline({ paused: true });
+
+      // Music volume setup and fade-out at end
+      tl.set("#bg-music", { volume: 0.82 }, 0);
+      tl.to("#bg-music", { volume: 0, duration: 1.5, ease: "power2.out" }, 21.5);
+
+      // =====================================================================
+      // SCENE 1: HOOK (0.0s - 3.8s)
+      // =====================================================================
+      tl.fromTo("#hook-eyebrow", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, 0.2);
+      tl.fromTo("#hook-title-1", { y: 25, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: "power3.out" }, 0.4);
+      tl.fromTo("#hook-title-2", { y: 25, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: "power3.out" }, 0.7);
+      tl.fromTo(".hook-pill", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, stagger: 0.12, ease: "power2.out" }, 1.1);
+      tl.to("#hook-container", { scale: 0.96, opacity: 0, duration: 0.5, ease: "power2.in" }, 3.3);
+
+      // =====================================================================
+      // SCENE 2: DASHBOARD & AUTHORITATIVE SETTLEMENT (3.8s - 7.8s)
+      // =====================================================================
+      tl.fromTo("#scene2-window", { scale: 0.94, y: 35, opacity: 0 }, { scale: 1.0, y: 0, opacity: 1, duration: 0.7, ease: "power3.out" }, 3.8);
+      tl.fromTo("#scene2-focus", { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "power2.out" }, 4.3);
+      tl.fromTo("#scene2-badge", { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 4.5);
+      // Subtle, stable camera push without text jitter
+      tl.to("#scene2-viewport", { scale: 1.018, transformOrigin: "50% 45%", duration: 2.2, ease: "sine.inOut" }, 4.8);
+      tl.to("#scene2-container", { scale: 0.98, opacity: 0, duration: 0.4, ease: "power2.in" }, 7.4);
+
+      // =====================================================================
+      // SCENE 3: SCENARIO LAB & CHAOS TESTING (7.8s - 11.8s)
+      // =====================================================================
+      tl.fromTo("#scene3-window", { scale: 0.95, opacity: 0 }, { scale: 1.0, opacity: 1, duration: 0.6, ease: "power3.out" }, 7.8);
+      tl.fromTo("#scene3-focus", { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "power2.out" }, 8.3);
+      tl.fromTo("#scene3-badge", { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 8.5);
+      tl.to("#scene3-viewport", { scale: 1.018, transformOrigin: "65% 45%", duration: 2.2, ease: "sine.inOut" }, 8.8);
+      tl.to("#scene3-container", { scale: 0.98, opacity: 0, duration: 0.4, ease: "power2.in" }, 11.4);
+
+      // =====================================================================
+      // SCENE 4: FAILURE DETECTION & INVARIANT INV-002 (11.8s - 15.6s)
+      // =====================================================================
+      tl.fromTo("#scene4-window", { scale: 0.95, opacity: 0 }, { scale: 1.0, opacity: 1, duration: 0.6, ease: "power3.out" }, 11.8);
+      tl.fromTo("#scene4-focus", { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "power2.out" }, 12.3);
+      tl.fromTo("#scene4-badge", { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 12.5);
+      tl.to("#scene4-viewport", { scale: 1.018, transformOrigin: "50% 36%", duration: 2.1, ease: "sine.inOut" }, 12.8);
+      tl.to("#scene4-container", { scale: 0.98, opacity: 0, duration: 0.4, ease: "power2.in" }, 15.2);
+
+      // =====================================================================
+      // SCENE 5: DIAGNOSTIC STUDIO & PROPOSED CODE DIFF (15.6s - 19.4s)
+      // =====================================================================
+      tl.fromTo("#scene5-window", { scale: 0.95, opacity: 0 }, { scale: 1.0, opacity: 1, duration: 0.6, ease: "power3.out" }, 15.6);
+      tl.fromTo("#scene5-focus", { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "power2.out" }, 16.1);
+      tl.fromTo("#scene5-badge", { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 16.3);
+      tl.to("#scene5-viewport", { scale: 1.018, transformOrigin: "50% 60%", duration: 2.1, ease: "sine.inOut" }, 16.6);
+      tl.to("#scene5-container", { scale: 0.98, opacity: 0, duration: 0.4, ease: "power2.in" }, 19.0);
+
+      // =====================================================================
+      // SCENE 6: BRANDED OUTRO (19.4s - 23.0s)
+      // =====================================================================
+      tl.fromTo("#outro-mark", { scale: 0.7, opacity: 0, y: 30 }, { scale: 1.0, opacity: 1, y: 0, duration: 0.6, ease: "back.out(1.4)" }, 19.5);
+      tl.fromTo("#outro-title", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, 19.8);
+      tl.fromTo("#outro-sub", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, 20.0);
+      tl.fromTo("#outro-badges", { y: 15, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 20.3);
+
+      // Register the single paused timeline
+      window.__timelines = window.__timelines || {};
+      window.__timelines["paypath-launch"] = tl;
+    </script>
+  </body>
+</html>
