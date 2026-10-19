@@ -1,5 +1,3 @@
-# PayPath — Payment Reliability Lab
-
 ![PayPath Banner](public/brand/paypath-social-preview.png)
 
 [![Next.js 16](https://img.shields.io/badge/Next.js-16-000000?style=flat-square&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
@@ -14,13 +12,12 @@ A developer testing harness and diagnostic workbench for PayPal checkout integra
 
 ---
 
-## Product Demo
+<a id="product-demo"></a>
+## Product Demo <sup>([Watch on YouTube](https://youtu.be/--0wDgUDvRo))</sup>
 
 A 23-second product launch video provides an overview of the PayPath testing workflow, including fault injection, invariant violation detection, and safe state reconciliation.
 
-[![Watch PayPath Product Demo](media/paypath-product-launch.jpg)](https://youtu.be/--0wDgUDvRo)
-
-[Watch the 23-second product demo on YouTube](https://youtu.be/--0wDgUDvRo)
+https://github.com/user-attachments/assets/12bb16b4-9993-4d7d-aa5b-7949e01110d3
 
 ---
 
