@@ -54,8 +54,10 @@ brag-output/
 **/.hyperframes/
 media/qa-frames/
 media/*-candidate.mp4
+media/*-optimized.mp4
 media/paypath-video-source/assets/music/
 media/paypath-video-source/assets/sfx/
+
 
 # local development, testing & capture helpers
 scripts/audit_src_secrets.cjs

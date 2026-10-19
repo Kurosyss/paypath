@@ -4,7 +4,14 @@
 
 A developer testing harness and diagnostic workbench for PayPal checkout integrations. PayPath reproduces edge-case payment failures, injects chaos conditions, verifies transactions against 10 deterministic safety invariants, and generates resilient code fixes.
 
-`Next.js 16` | `TypeScript 5` | `Tailwind CSS v4` | `PayPal Orders v2 REST` | `Vitest 5` | `Deterministic Rule Engine`
+[![Next.js 16](https://img.shields.io/badge/Next.js-16-000000?style=flat-square&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
+[![React 19](https://img.shields.io/badge/React-19-000000?style=flat-square&logo=react&logoColor=white)](https://react.dev/)
+[![TypeScript 5](https://img.shields.io/badge/TypeScript-5-000000?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Tailwind CSS 4](https://img.shields.io/badge/Tailwind_CSS-4-000000?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![PayPal Orders v2 Sandbox](https://img.shields.io/badge/PayPal-Orders_v2_Sandbox-000000?style=flat-square&logo=paypal&logoColor=white)](https://developer.paypal.com/docs/api/orders/v2/)
+[![Vitest 5](https://img.shields.io/badge/Vitest-5-000000?style=flat-square&logo=vitest&logoColor=white)](https://vitest.dev/)
+[![MIT License](https://img.shields.io/badge/License-MIT-000000?style=flat-square)](LICENSE)
+
 
 ---
 
