@@ -1,4 +1,4 @@
-![PayPath — PayPal Payment Reliability Lab and Testing Harness](public/brand/paypath-social-preview.png)
+![PayPath — Test, Diagnose, Repair. For Reliable Payments.](public/brand/paypath-editorial-hero.png)
 
 [![Next.js 16](https://img.shields.io/badge/Next.js-16-000000?style=flat-square&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
 [![React 19](https://img.shields.io/badge/React-19-000000?style=flat-square&logo=react&logoColor=white)](https://react.dev/)
