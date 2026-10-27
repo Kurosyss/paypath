@@ -10,13 +10,13 @@
 [![Vitest 5](https://img.shields.io/badge/Vitest-5-000000?style=flat-square&logo=vitest&logoColor=white)](https://vitest.dev/)
 [![MIT License](https://img.shields.io/badge/License-MIT-000000?style=flat-square)](LICENSE)
 
-PayPath is an open-source payment reliability harness and autonomous repair agent for PayPal Orders v2 integrations. It intercepts checkout failure scenarios, validates monotonic payment safety invariants, diagnoses root causes, and synthesizes verified AST code patches inside isolated Git worktrees.
+PayPath is an open-source payment reliability lab and testing harness for PayPal Orders v2 Sandbox integrations. It helps developers test checkout failure scenarios, validate authoritative state reconciliation, enforce idempotency, simulate webhooks, diagnose root causes with deterministic invariants, and synthesize verified code patches in isolated Git worktrees.
 
 ---
 
 ## Table of Contents
 
-- [Demonstration & Video Walkthrough](#demonstration--video-walkthrough)
+- [Demonstration Video](#demonstration-video)
 - [Product Screenshots](#product-screenshots)
 - [Problem and Solution](#problem-and-solution)
 - [Key Features](#key-features)
@@ -30,14 +30,13 @@ PayPath is an open-source payment reliability harness and autonomous repair agen
 
 ---
 
-## Demonstration & Video Walkthrough
+## Demonstration Video
 
 ### PayPath — AI-Powered Payment Reliability & Autonomous Repair Demo (2:41)
 
 [![Watch PayPath Demonstration on YouTube](media/devpost/paypath-demo-thumbnail.png)](https://youtu.be/LPS2AAMqVgk)
 
-> 📺 **[Watch Full HD Walkthrough on YouTube (2:41) → https://youtu.be/LPS2AAMqVgk](https://youtu.be/LPS2AAMqVgk)**  
-> *A live developer walkthrough demonstrating checkout failure interception, deterministic invariant violation, structured root-cause analysis, ephemeral Git worktree repair, and human-in-the-loop sign-off.*
+*A live developer walkthrough demonstrating checkout failure interception, deterministic invariant violation, structured root-cause analysis, ephemeral Git worktree repair, and human-in-the-loop sign-off. (Click image to watch on YouTube)*
 
 ---
 
