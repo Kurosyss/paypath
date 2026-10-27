@@ -14,6 +14,7 @@ PayPath is an open-source developer testing harness for PayPal Orders v2 Sandbox
 
 ## Table of Contents
 
+- [Demonstration & Video Walkthrough](#demonstration--video-walkthrough)
 - [Product Screenshots](#product-screenshots)
 - [Problem and Solution](#problem-and-solution)
 - [Key Features](#key-features)
@@ -24,6 +25,17 @@ PayPath is an open-source developer testing harness for PayPal Orders v2 Sandbox
 - [Security and Limitations](#security-and-limitations)
 - [License and Contribution](#license-and-contribution)
 
+
+---
+
+## Demonstration & Video Walkthrough
+
+### PayPath — AI-Powered Payment Reliability & Autonomous Repair Demo (2:41)
+
+[![Watch PayPath Demonstration on YouTube](media/devpost/paypath-demo-thumbnail.png)](https://youtu.be/LPS2AAMqVgk)
+
+> 📺 **[Watch Full HD Walkthrough on YouTube (2:41) → https://youtu.be/LPS2AAMqVgk](https://youtu.be/LPS2AAMqVgk)**  
+> *A live developer walkthrough demonstrating checkout failure interception, deterministic invariant violation, structured root-cause analysis, ephemeral Git worktree repair, and human-in-the-loop sign-off.*
 
 ---
 
@@ -54,6 +66,30 @@ The following screenshots are captured directly from the running PayPath applica
 ### 6. PayPal Webhook Simulator and Deduplication
 ![PayPath Webhook Simulator — Idempotency and Duplicate Capture Event Deduplication](docs/screenshots/06-webhook-simulator.png)
 *Interactive webhook simulator dispatching duplicate `PAYMENT.CAPTURE.COMPLETED` events, validating that the handler recognizes identical event identifiers and returns an acknowledged skipped action.*
+
+### 7. Interactive Execution Flow Graph
+![PayPath Execution Flow Graph — Real-time Payment Lifecycle and Failure Interception](docs/screenshots/04-execution-flow-graph.jpg)
+*Visual state machine depicting the payment lifecycle stages (Order Creation, Authorization, Capture Attempt, Invariant Triage, and Settlement). Nodes highlight intercepted failure points and trace reconciliation transitions in real time.*
+
+### 8. Autonomous Repair Lab and Isolated Patch Workspace
+![PayPath Repair Lab — Ephemeral Worktree Isolation and Diff Synthesis](docs/screenshots/05-repair-lab.jpg)
+*Autonomous Repair Lab synthesizing an AST-validated patch in an isolated ephemeral Git worktree, preventing untested code mutations from affecting the running checkout runtime.*
+
+### 9. Synthesized Code Diff and Automated Verification
+![PayPath Repair Lab Diff — Proposed Resilience Patch and Test Evidence](docs/screenshots/05-repair-lab-diff.jpg)
+*Side-by-side unified code diff inspection view with inline test evidence, comparing baseline failure traces against the isolated worktree patch verification.*
+
+### 10. Operator Review Gate and Human-in-the-Loop Sign-Off
+![PayPath Operator Review Gate — Manual Approval and Deployment Safety](docs/screenshots/06-operator-review-gate.jpg)
+*Human-in-the-loop governance modal allowing an engineering lead or payment operator to inspect synthesized diffs, review invariant test results, and approve or reject deployment.*
+
+### 11. Sanitized Incident Evidence and Telemetry Export
+![PayPath Incident Exporter — Sanitized Telemetry Bundle and Audit Log](docs/screenshots/11-sanitized-incident-evidence.jpg)
+*Full diagnostic telemetry bundle export scrubbed of credentials, OAuth tokens, and PII, providing an auditable incident postmortem for dispute resolution and compliance.*
+
+### 12. Cross-Device Responsive Layout
+![PayPath Mobile and Tablet Layout — High-Density Responsive Workbench](docs/screenshots/07-mobile-responsive.jpg)
+*High-density responsive design tested across desktop, tablet, and mobile viewport sizes, ensuring critical payment telemetry remains fully accessible in on-call triage environments.*
 
 ---
 
@@ -95,6 +131,10 @@ When engineering PayPal checkout integrations, standard happy-path tests against
 - **Trace Sanitization:** Recursive credential redactor that scrubs client secrets, OAuth bearer tokens, authorization headers, and payment card numbers before storage or presentation.
 - **Diagnostic Studio:** Automated root-cause analysis based on trace anomalies and invariant violations, producing unified Git diffs and regression test drafts.
 - **Webhook Simulator:** In-app testing modal for dispatching test events, validating duplicate event replay handling, and testing cryptographic signature verification.
+- **Interactive Execution Flow Graph:** Real-time visual state machine rendering the full payment lifecycle, active invariant gates, and failure interception boundaries.
+- **Autonomous Repair Lab:** Ephemeral Git worktree isolation for generating, AST-validating, and testing resilience code patches before applying them.
+- **Operator Review Gate:** Human-in-the-loop safety modal requiring manual developer approval and sign-off before patch application or regression deployment.
+- **Sanitized Incident Telemetry & Export:** Structured JSON incident bundles with recursive secret scrubbing for postmortem auditing and compliance.
 - **Local Run Persistence:** Structured file storage under `.paypath-data/` tracking run histories, invariant audit trails, and payment confirmations.
 
 *Implementation Note: Live PayPal Sandbox requests communicate directly with `api-m.sandbox.paypal.com`. Payment failure conditions (such as 504 Gateway Timeouts or network drops) are simulated locally through controlled fault injection to test checkout error handlers safely. PayPath is a testing harness, not a production payment gateway or processor.*
@@ -112,6 +152,8 @@ flowchart TD
         Card[Authoritative Payment Card]
         Lab[Scenario Lab & Chaos Controls]
         Studio[Diagnostic Studio & Fix Diff]
+        FlowGraph[Interactive Execution Flow Graph]
+        RepairLab[Autonomous Repair Lab & Operator Gate]
         WHModal[Webhook Simulator]
     end
 
@@ -120,6 +162,8 @@ flowchart TD
         PayPalAPI["/api/paypal (create, capture, reconcile)"]
         ScenariosAPI["/api/scenarios (list, run)"]
         RunsAPI["/api/runs"]
+        RepairAPI["/api/repair (generate, test, apply)"]
+        TelemetryAPI["/api/telemetry & incident/export"]
         WebhookAPI["/api/paypal/webhook"]
     end
 
@@ -128,17 +172,22 @@ flowchart TD
         Sanitizer[Recursive Trace & Secret Sanitizer]
         InvariantEngine[10 Deterministic Safety Invariants]
         DiagEngine[Deterministic Rule Engine / Optional Gemini Adapter]
+        PatchRunner[Isolated Worktree Patch Runner]
+        DiffValidator[AST & Syntax Diff Validator]
     end
 
     subgraph ExternalAndStorage [External Services & Storage]
         PayPalSandbox[PayPal Orders v2 Sandbox API]
         LocalStorage[Local Run & Webhook Dedup Cache]
+        WorktreeStore[Isolated Git Worktrees]
         GeminiAPI[Optional Google Gemini API]
     end
 
     UI --> ConfigAPI
     UI --> ScenariosAPI
     UI --> RunsAPI
+    UI --> FlowGraph
+    UI --> RepairLab
     Card --> PayPalAPI
     WHModal --> WebhookAPI
 
@@ -150,7 +199,13 @@ flowchart TD
     Sanitizer --> InvariantEngine
     InvariantEngine --> DiagEngine
     Sanitizer --> DiagEngine
+    Sanitizer --> TelemetryAPI
     DiagEngine -.->|If Configured| GeminiAPI
+    DiagEngine --> RepairAPI
+    RepairLab --> RepairAPI
+    RepairAPI --> PatchRunner
+    PatchRunner --> DiffValidator
+    PatchRunner --> WorktreeStore
     WebhookAPI --> LocalStorage
     RunsAPI --> LocalStorage
     CoreEngine --> LocalStorage
