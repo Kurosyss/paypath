@@ -1,6 +1,19 @@
 {
   "name": "paypath",
   "version": "0.1.0",
+  "description": "AI-Powered Payment Reliability Harness & Autonomous Repair Agent for PayPal Orders v2",
+  "keywords": [
+    "paypal",
+    "payment-reliability",
+    "ai-diagnostics",
+    "autonomous-repair",
+    "sandbox-testing",
+    "invariants",
+    "chaos-testing",
+    "webhooks",
+    "idempotency",
+    "developer-tools"
+  ],
   "private": true,
   "scripts": {
     "dev": "next dev",

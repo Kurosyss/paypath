@@ -5,10 +5,12 @@
 [![TypeScript 5](https://img.shields.io/badge/TypeScript-5-000000?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Tailwind CSS 4](https://img.shields.io/badge/Tailwind_CSS-4-000000?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![PayPal Orders v2 Sandbox](https://img.shields.io/badge/PayPal-Orders_v2_Sandbox-000000?style=flat-square&logo=paypal&logoColor=white)](https://developer.paypal.com/docs/api/orders/v2/)
+[![Payment Invariants](https://img.shields.io/badge/Invariants-10_Deterministic_Rules-000000?style=flat-square&logo=shield&logoColor=white)](#key-features)
+[![Autonomous Repair](https://img.shields.io/badge/Repair_Agent-Isolated_Worktrees-000000?style=flat-square&logo=git&logoColor=white)](#key-features)
 [![Vitest 5](https://img.shields.io/badge/Vitest-5-000000?style=flat-square&logo=vitest&logoColor=white)](https://vitest.dev/)
 [![MIT License](https://img.shields.io/badge/License-MIT-000000?style=flat-square)](LICENSE)
 
-PayPath is an open-source developer testing harness for PayPal Orders v2 Sandbox integrations. It helps developers test checkout failure scenarios, payment idempotency, duplicate-capture protection, webhook simulation, and payment-state reconciliation.
+PayPath is an open-source payment reliability harness and autonomous repair agent for PayPal Orders v2 integrations. It intercepts checkout failure scenarios, validates monotonic payment safety invariants, diagnoses root causes, and synthesizes verified AST code patches inside isolated Git worktrees.
 
 ---
 
@@ -67,29 +69,13 @@ The following screenshots are captured directly from the running PayPath applica
 ![PayPath Webhook Simulator — Idempotency and Duplicate Capture Event Deduplication](docs/screenshots/06-webhook-simulator.png)
 *Interactive webhook simulator dispatching duplicate `PAYMENT.CAPTURE.COMPLETED` events, validating that the handler recognizes identical event identifiers and returns an acknowledged skipped action.*
 
-### 7. Interactive Execution Flow Graph
-![PayPath Execution Flow Graph — Real-time Payment Lifecycle and Failure Interception](docs/screenshots/04-execution-flow-graph.jpg)
-*Visual state machine depicting the payment lifecycle stages (Order Creation, Authorization, Capture Attempt, Invariant Triage, and Settlement). Nodes highlight intercepted failure points and trace reconciliation transitions in real time.*
+### 7. Autonomous Repair Lab and Isolated Worktree Diff
+![PayPath Repair Lab — Candidate Unified Diff and Operator Promotion Boundary](docs/screenshots/07-autonomous-repair-diff.png)
+*Autonomous Repair Lab displaying the synthesized candidate patch for `src/services/paypal-checkout.ts` inside an isolated Git worktree sandbox, complete with allowlist validation, regression test verification, and the operator review sign-off boundary.*
 
-### 8. Autonomous Repair Lab and Isolated Patch Workspace
-![PayPath Repair Lab — Ephemeral Worktree Isolation and Diff Synthesis](docs/screenshots/05-repair-lab.jpg)
-*Autonomous Repair Lab synthesizing an AST-validated patch in an isolated ephemeral Git worktree, preventing untested code mutations from affecting the running checkout runtime.*
-
-### 9. Synthesized Code Diff and Automated Verification
-![PayPath Repair Lab Diff — Proposed Resilience Patch and Test Evidence](docs/screenshots/05-repair-lab-diff.jpg)
-*Side-by-side unified code diff inspection view with inline test evidence, comparing baseline failure traces against the isolated worktree patch verification.*
-
-### 10. Operator Review Gate and Human-in-the-Loop Sign-Off
-![PayPath Operator Review Gate — Manual Approval and Deployment Safety](docs/screenshots/06-operator-review-gate.jpg)
-*Human-in-the-loop governance modal allowing an engineering lead or payment operator to inspect synthesized diffs, review invariant test results, and approve or reject deployment.*
-
-### 11. Sanitized Incident Evidence and Telemetry Export
-![PayPath Incident Exporter — Sanitized Telemetry Bundle and Audit Log](docs/screenshots/11-sanitized-incident-evidence.jpg)
-*Full diagnostic telemetry bundle export scrubbed of credentials, OAuth tokens, and PII, providing an auditable incident postmortem for dispute resolution and compliance.*
-
-### 12. Cross-Device Responsive Layout
-![PayPath Mobile and Tablet Layout — High-Density Responsive Workbench](docs/screenshots/07-mobile-responsive.jpg)
-*High-density responsive design tested across desktop, tablet, and mobile viewport sizes, ensuring critical payment telemetry remains fully accessible in on-call triage environments.*
+### 8. Sanitized Incident Timeline and Telemetry Export
+![PayPath Incident Exporter — Chronological Audit Log and Redacted Telemetry Trace](docs/screenshots/08-incident-evidence.png)
+*Sanitized execution trace timeline detailing intercepted HTTP requests, negative-testing simulation headers, and state transitions with sensitive OAuth tokens, card details, and credentials recursively redacted for audit compliance.*
 
 ---
 
